@@ -32,9 +32,10 @@ What is true when this work is done:
       explicit un-placeable list — **never silently omitted** (`docs/vision.md`
       success criterion).
 - [ ] German umlauts (ä/ö/ü) and ß are handled correctly: words are normalized
-      to a consistent case and preserved (not transliterated), and random fill
-      is biased to the alphabet actually in use so hidden umlaut-words do not
-      stand out.
+      to a consistent case and preserved (not transliterated — no naive
+      `toUpperCase` that turns ß into SS), and random fill draws from an alphabet
+      (source resolved at the gate) that includes any ä/ö/ü/ß present, so hidden
+      umlaut-words do not stand out.
 - [ ] `src/core/*` imports no React/DOM (ESLint-enforced), contains no `any`,
       and ships with Vitest unit tests; `npm run verify` passes.
 
@@ -48,7 +49,8 @@ What is true when this work is done:
   budget, overlap at matching letters, seeded PRNG.
 - Direction-set control (8 directions) + reverse toggle.
 - Difficulty preset → `PuzzleConfig` mapping (Easy / Medium / Hard).
-- Alphabet-biased random fill honoring the German character set.
+- Random fill honoring the German character set (fill-alphabet source resolved
+  at the gate).
 - Word normalization (case + umlaut/ß preservation) and validation
   (word longer than the grid → reported un-placeable, not a crash).
 - `GenerationResult` carrying the grid, the placed words (with coordinates +
@@ -98,7 +100,8 @@ From `docs/prior-art.md`, indexed by concern for this phase:
   remaining cells; start with **retries**, escalate to backtracking only if a
   grid ≥ ~1.5× longest word still fails (avoid premature backtracking).
 - [Grid generation engine (Phase 2) → bunkat/wordfind](../prior-art.md#bunkatwordfind)
-  — random-placement-with-retries algorithm (the solver layer is out of scope).
+  — random-placement-with-retries algorithm (its `wordfindgame.js` jQuery layer
+  is the wrong dependency; the solver logic is deferred, not built this phase).
 - [Grid generation engine (Phase 2) → joshbduncan/word-search-generator](../prior-art.md#joshbduncanword-search-generator)
   — the difficulty-LEVEL abstraction (L1 = one direction … L3 = all 8), the
   direction-string API shape, and the answer-key coordinate format
@@ -124,11 +127,12 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 | **Retry-based** placement with a bounded retry budget; report words that still don't fit | Jamis Buck prior art: full backtracking is usually unnecessary for grid ≥ ~1.5× longest word — start simple, escalate only if measured need arises. Bounded retries keep generation fast and deterministic under a fixed seed. | 2026-07-20 |
 | Overlap allowed **only at matching letters**; conflicting cell → placement rejected, retried | Standard word-search behavior (blex41, wordfind); produces denser, valid grids. | 2026-07-20 |
 | `Direction` = the 8 compass vectors; `reverse` is a **config flag** enabling backward placement along allowed directions | `docs/vision.md`: direction control H/V/D with "optional reverse". Modeling reverse as a flag (not 16 directions) keeps the direction set the user-facing 8 and matches the difficulty presets. | 2026-07-20 |
-| Words normalized to **UPPERCASE**, umlauts/ß **preserved** (not transliterated to ae/oe/ue/ss) | `docs/vision.md`: "Correct handling of German umlauts / ß." Transliteration would change the word the child searches for. Uppercase gives a uniform grid (prior-art diacritics note). | 2026-07-20 |
-| Random fill drawn from the **alphabet actually in use** (the union of letters across the placed words, incl. any umlaut/ß present) | Prior-art diacritics: filling with out-of-alphabet characters makes ä/ö/ü/ß words stand out. Keeps difficulty honest. | 2026-07-20 |
-| Grid size bounds **5×5 – 30×30** | Prior-art competitor range; below 5 is unusable, above 30 breaks A4 print legibility (Phase 4). | 2026-07-20 |
+| Words normalized to **UPPERCASE via an explicit German-aware mapping**, umlauts/ß **preserved** (not transliterated to ae/oe/ue/ss) | `docs/vision.md`: "Correct handling of German umlauts / ß." Transliteration would change the word the child searches for. **Do not use bare `String.prototype.toUpperCase()`** — it maps `ß` → `SS` (two cells, breaking placement length). Map `ä/ö/ü → Ä/Ö/Ü` and keep `ß` as a single-cell glyph (leave lowercase `ß`, or use capital `ẞ` U+1E9E — a single cell either way). | 2026-07-20 |
+| Grid size bounds **5×5 – 30×30** | Below 5×5 cannot hold most words; the upper bound keeps the retry budget bounded (retry cost scales with grid area) and the grid legible for the later A4 print phase. Consistent with the prior-art competitor range (5–30). | 2026-07-20 |
 | A word longer than the grid dimension is **reported un-placeable**, never a crash or silent drop | `docs/vision.md` success criterion: places all words or clearly reports which do not fit — never a silent omission. | 2026-07-20 |
+| **Fixed, documented seeded PRNG** (small pure function, e.g. mulberry32), no `Math.random()` in `src/core` | Determinism tests assert byte-identical grids, so the PRNG must be pinned once; test fixtures depend on it. A tiny pure PRNG keeps `src/core` dependency-free and offline. | 2026-07-20 |
 | **OPEN — the exact Easy / Medium / Hard preset mapping** (grid size + allowed direction set + reverse on/off for each) | resolved at the spec-acceptance gate | — |
+| **OPEN — random-fill alphabet source**: full German alphabet (A–Z + any ä/ö/ü/ß present in the words) vs. strictly the union of letters used by the placed words | resolved at the spec-acceptance gate — the prior-art requirement (diacritics present in words must also appear in fill) is met either way, but the choice materially changes difficulty feel (a full alphabet hides words better; a word-letter union can make short lists trivially easy) | — |
 
 ## Tracking
 
@@ -155,8 +159,9 @@ this phase, so the QA gate is code-level rather than a `UI check`).
       rejected and retried.
 - [ ] Unit test: a word longer than the grid, and an over-full word list, are
       returned in the un-placeable list — never crash, never silently dropped.
-- [ ] Unit test: German — ä/ö/ü/ß words are placed and readable; random fill
-      contains no character outside the in-use alphabet.
+- [ ] Unit test: German — ä/ö/ü/ß words are placed and readable (ß occupies a
+      single cell, not "SS"); random fill contains no character outside the
+      gate-resolved fill alphabet.
 - [ ] Unit test: each difficulty preset yields the agreed grid size + direction
       set + reverse flag (per the gate-resolved mapping).
 
