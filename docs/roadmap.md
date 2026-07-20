@@ -12,7 +12,7 @@
 | Phase | Name | Spec | Milestone |
 |---|---|---|---|
 | 1 | Project scaffold & deploy | [spec](specs/spec-scaffold.md) | [#1](https://github.com/vaxul/word-search-generator/milestone/1) |
-| 2 | Grid generation engine | — | — |
+| 2 | Grid generation engine | [spec](specs/spec-grid-engine.md) | [#2](https://github.com/vaxul/word-search-generator/milestone/2) |
 | 3 | Editor & preview UI | — | — |
 | 4 | A4 PDF export | — | — |
 
