@@ -163,3 +163,33 @@ covers are checked at the human milestone-QA gate).
 
 - 2026-07-20: Phase split from `docs/roadmap.md`; scaffold owns toolchain +
   deploy only, no domain logic (that is Phase 2+).
+- 2026-07-20 (#4 — ESLint/Prettier guards): pinned toolchain — `eslint@9.17.0`,
+  `typescript-eslint@8.18.2`, `@eslint/js@9.17.0`, `prettier@3.4.2`,
+  `eslint-config-prettier@9.1.0`, `globals@15.14.0` (exact, matching the
+  scaffold's exact-version convention; deterministic `npm ci`).
+- 2026-07-20 (#4): `max-lines` (300) and `max-lines-per-function` (50) use
+  `skipBlankLines` + `skipComments` — the limits govern real code, not blank
+  lines or the mandated English comments.
+- 2026-07-20 (#4): network guard is `no-restricted-globals` (bare `fetch` /
+  `XMLHttpRequest`) **plus** `no-restricted-syntax` selectors for
+  `window.fetch` / `window.XMLHttpRequest` / `new XMLHttpRequest()` — the
+  member-access forms the globals rule alone would miss.
+- 2026-07-20 (#4): `no-restricted-syntax` options are spread from shared arrays
+  because ESLint replaces (not merges) a rule's options across overrides; the
+  `src/features/**` + `src/app/**` block therefore re-declares the network +
+  default-export selectors alongside the German-literal ones.
+- 2026-07-20 (#4): German-literal backstop is scoped to `src/features/**` +
+  `src/app/**` and deliberately **excludes** `src/strings/` (the one place
+  German text is allowed) and `src/core/**` (no UI text). Confirmed by fixture:
+  a non-ASCII literal in `src/strings/` is not flagged.
+- 2026-07-20 (#4): core `no-undef` disabled for `src/**` TS files
+  (typescript-eslint guidance — TS resolves identifiers; core `no-undef` only
+  false-positives on type-only references).
+- 2026-07-20 (#4): Prettier runs as a separate step (`format` / `format:check`);
+  `eslint-config-prettier` turns off ESLint's stylistic rules so the two tools
+  do not fight. `.prettierignore` excludes generated files and hand-maintained
+  `docs/` prose.
+- 2026-07-20 (#4): each guard verified to fire via temporary fixtures (React
+  import in `core`, `any` in `core`, `fetch` in a feature, `default export`,
+  German umlaut literal, a 59-line function) that were linted then removed — no
+  violation fixtures are committed under `src/`.

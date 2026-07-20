@@ -1,0 +1,7 @@
+dist
+node_modules
+coverage
+package-lock.json
+# Docs are hand-maintained English prose (see .editorconfig md exemption).
+docs
+*.md
