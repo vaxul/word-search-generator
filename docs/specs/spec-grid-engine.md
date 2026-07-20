@@ -26,15 +26,16 @@ What is true when this work is done:
       controllable, and an **optional reverse** toggle allows backward placement
       along the allowed directions.
 - [ ] Difficulty presets (Easy / Medium / Hard) fold into a `PuzzleConfig` as a
-      grid size + allowed direction set + reverse flag (mapping resolved at the
-      spec-acceptance gate).
+      grid size + allowed direction set + reverse flag, per the resolved mapping
+      (Easy 12×12 H+V; Medium 15×15 +diagonals; Hard 18×18 all-8 +reverse — see
+      Prior decisions).
 - [ ] Words that cannot be placed are returned in `GenerationResult` as an
       explicit un-placeable list — **never silently omitted** (`docs/vision.md`
       success criterion).
 - [ ] German umlauts (ä/ö/ü) and ß are handled correctly: words are normalized
       to a consistent case and preserved (not transliterated — no naive
       `toUpperCase` that turns ß into SS), and random fill draws from an alphabet
-      (source resolved at the gate) that includes any ä/ö/ü/ß present, so hidden
+      = the full German alphabet (A–Z) plus any ä/ö/ü/ß present, so hidden
       umlaut-words do not stand out.
 - [ ] `src/core/*` imports no React/DOM (ESLint-enforced), contains no `any`,
       and ships with Vitest unit tests; `npm run verify` passes.
@@ -49,8 +50,8 @@ What is true when this work is done:
   budget, overlap at matching letters, seeded PRNG.
 - Direction-set control (8 directions) + reverse toggle.
 - Difficulty preset → `PuzzleConfig` mapping (Easy / Medium / Hard).
-- Random fill honoring the German character set (fill-alphabet source resolved
-  at the gate).
+- Random fill honoring the German character set (full German alphabet A–Z plus
+  any ä/ö/ü/ß present in the words).
 - Word normalization (case + umlaut/ß preservation) and validation
   (word longer than the grid → reported un-placeable, not a crash).
 - `GenerationResult` carrying the grid, the placed words (with coordinates +
@@ -131,8 +132,8 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 | Grid size bounds **5×5 – 30×30** | Below 5×5 cannot hold most words; the upper bound keeps the retry budget bounded (retry cost scales with grid area) and the grid legible for the later A4 print phase. Consistent with the prior-art competitor range (5–30). | 2026-07-20 |
 | A word longer than the grid dimension is **reported un-placeable**, never a crash or silent drop | `docs/vision.md` success criterion: places all words or clearly reports which do not fit — never a silent omission. | 2026-07-20 |
 | **Fixed, documented seeded PRNG** (small pure function, e.g. mulberry32), no `Math.random()` in `src/core` | Determinism tests assert byte-identical grids, so the PRNG must be pinned once; test fixtures depend on it. A tiny pure PRNG keeps `src/core` dependency-free and offline. | 2026-07-20 |
-| **OPEN — the exact Easy / Medium / Hard preset mapping** (grid size + allowed direction set + reverse on/off for each) | resolved at the spec-acceptance gate | — |
-| **OPEN — random-fill alphabet source**: full German alphabet (A–Z + any ä/ö/ü/ß present in the words) vs. strictly the union of letters used by the placed words | resolved at the spec-acceptance gate — the prior-art requirement (diacritics present in words must also appear in fill) is met either way, but the choice materially changes difficulty feel (a full alphabet hides words better; a word-letter union can make short lists trivially easy) | — |
+| **Difficulty presets** — Easy: 12×12, directions H+V (E, S), reverse **off**; Medium: 15×15, H+V+diagonals (E, S, SE, NE), reverse **off**; Hard: 18×18, all 8 directions, reverse **on** | Resolved at the spec-acceptance gate (2026-07-20). Follows the prior-art L1→L3 progression (one axis → +diagonals → all 8 + reverse); human chose the larger grid sizes (bigger search area) with that progression. Presets are data, not logic — adjustable later without engine changes. | 2026-07-20 |
+| **Random-fill alphabet** = the **full German alphabet (A–Z) plus any ä/ö/ü/ß present in the words** | Resolved at the spec-acceptance gate (2026-07-20). Hides words well and keeps difficulty honest even for short/low-diversity word lists; satisfies the prior-art diacritics requirement (any diacritic in a word also appears in the fill) and matches typical word-search practice. | 2026-07-20 |
 
 ## Tracking
 
@@ -178,3 +179,8 @@ this phase, so the QA gate is code-level rather than a `UI check`).
 
 - 2026-07-20: Phase split from `docs/roadmap.md`; Phase 2 owns `core/model` +
   `core/grid` only — no rendering (Phase 3) or PDF (Phase 4).
+- 2026-07-20 (spec-acceptance gate): difficulty presets resolved — Easy 12×12
+  H+V no-reverse, Medium 15×15 +diagonals no-reverse, Hard 18×18 all-8 +reverse
+  (larger grids per human preference, prior-art L1→L3 direction progression).
+- 2026-07-20 (spec-acceptance gate): random-fill alphabet resolved — full German
+  alphabet (A–Z) plus any ä/ö/ü/ß present in the words.
