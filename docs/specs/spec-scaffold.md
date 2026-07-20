@@ -98,6 +98,9 @@ prior art*, and `docs/prior-art.md` is indexed by concern for Phases 2–4 only.
 - [ ] **Actions enabled** for the repo and workflow permissions allow
       `pages: write` + `id-token: write` (default for repo-owned Actions;
       confirm no org policy blocks it).
+- [ ] **Repo is public** (or the account plan permits GitHub Pages on a private
+      repo). Pages on the free tier requires a public repo; a private repo needs
+      a paid plan. Confirm the repo's visibility/plan supports Pages.
 
 No secrets, API keys, or `.env` values are needed — the app has no backend
 (constitution).
@@ -110,10 +113,10 @@ No secrets, API keys, or `.env` values are needed — the app has no backend
 | ESLint **flat config** (`eslint.config.js`) | Current ESLint default (v9+); `no-restricted-imports`, `max-lines`, `max-lines-per-function`, `no-restricted-globals` (fetch/XHR), `no-restricted-syntax` (default export), `@typescript-eslint/no-explicit-any` encode the constitution mechanically. | 2026-07-20 |
 | `src/core` architecture guard via `no-restricted-imports` scoped to `src/core/**` | Constitution mandates `src/core` import no React/DOM; the path-scoped override is the mechanical enforcement it calls for. | 2026-07-20 |
 | `no-explicit-any` scoped stricter (error) in `src/core/**` | Constitution forbids `any` in core specifically; `noImplicitAny` (tsconfig strict) covers implicit, lint covers explicit. | 2026-07-20 |
-| Node 20 LTS pinned (`.nvmrc` + `package.json` engines) for local + CI | Current maintenance LTS; deterministic `npm ci` across dev and Actions. | 2026-07-20 |
+| Node 22 LTS pinned (`.nvmrc` + `package.json` engines) for local + CI | Node 20 reached end-of-life (~April 2026); Node 22 is the current maintenance LTS as of 2026-07-20. Deterministic `npm ci` across dev and Actions. | 2026-07-20 |
 | npm as package manager (committed `package-lock.json`) | `docs/workflow.md` Bootstrap is `npm ci`; matches the contract. | 2026-07-20 |
-| `tokens.css` generated from `docs/design.md` front-matter, committed (not build-time-generated) | Keeps the build dependency-free and offline; the tokens change rarely. A short script or manual sync keeps them in step; source of truth stays `docs/design.md`. | 2026-07-20 |
-| German-literal guard = ESLint rule flagging non-ASCII string literals in `src/features/**` and `src/app/**` (pointing to `src/strings/`) | Constitution: "no German string literals scattered across components." A lint guard is the mechanical enforcement; the strings module is the single home. | 2026-07-20 |
+| `tokens.css` generated from `docs/design.md` front-matter, committed (not build-time-generated) | Keeps the build dependency-free and offline; the tokens change rarely. Kept in sync **manually**, with the source-of-truth (`docs/design.md`) named in a header comment at the top of `tokens.css` so the next editor knows where the values come from. No sync script in Phase 1 (low churn; a script is over-engineering now). | 2026-07-20 |
+| German-literal guard = ESLint rule flagging **non-ASCII** string literals (umlaut/ß) in `src/features/**` and `src/app/**` (pointing to `src/strings/`) — a **partial** backstop, not full enforcement | Constitution: "no German string literals scattered across components." The lint rule mechanically catches umlaut/ß literals; ASCII-only German ("Titel", "Download") slips past it, so the real enforcement is the centralization convention (all UI text in `src/strings/`) plus review. The spec does not claim the lint rule fully enforces the rule. | 2026-07-20 |
 | Deploy trigger = push to `main` (+ manual `workflow_dispatch`) | Base/integration branch is `main` (`docs/workflow.md`); every merged change ships. | 2026-07-20 |
 
 No genuinely-open decisions — every fork is settled by the constitution,
@@ -139,7 +142,7 @@ covers are checked at the human milestone-QA gate).
       `/word-search-generator/`.
 - [ ] ESLint **fails** on a deliberate violation of each guard (React import in
       `src/core`, a `fetch` in app code, an `any` in core, a `default export`, a
-      German string literal in a component) — confirming the rules are live.
+      German umlaut/ß string literal in a component) — confirming the rules are live.
       *(A tiny fixture test or a manual check at the QA gate.)*
 - [ ] `npm run dev` serves the placeholder shell locally; text comes from
       `src/strings/`.
