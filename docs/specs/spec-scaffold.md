@@ -89,16 +89,16 @@ prior art*, and `docs/prior-art.md` is indexed by concern for Phases 2–4 only.
 
 ## Human prerequisites
 
-- [ ] **GitHub Pages enabled with source = "GitHub Actions"** for
+- [x] **GitHub Pages enabled with source = "GitHub Actions"** for
       `vaxul/word-search-generator` (repo Settings → Pages → Build and
       deployment → Source: GitHub Actions). The deploy workflow uses
       `actions/configure-pages` + `actions/deploy-pages`; the human confirms
       Pages is enabled (or lets `configure-pages` enable it) so the first deploy
       does not fail on a disabled Pages endpoint.
-- [ ] **Actions enabled** for the repo and workflow permissions allow
+- [x] **Actions enabled** for the repo and workflow permissions allow
       `pages: write` + `id-token: write` (default for repo-owned Actions;
       confirm no org policy blocks it).
-- [ ] **Repo is public** (or the account plan permits GitHub Pages on a private
+- [x] **Repo is public** (or the account plan permits GitHub Pages on a private
       repo). Pages on the free tier requires a public repo; a private repo needs
       a paid plan. Confirm the repo's visibility/plan supports Pages.
 
