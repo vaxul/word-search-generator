@@ -8,3 +8,17 @@ export {
   pdfFontForFamily,
 } from './fonts/fontAssets';
 export type { PdfFontAsset, PdfFontFamily, PdfFontId } from './fonts/fontAssets';
+export {
+  A4_WIDTH_MM,
+  A4_HEIGHT_MM,
+  PAGE_MARGIN_MM,
+  BLOCK_GUTTER_MM,
+  BLOCK_HEADER_MM,
+  BLOCK_WORDLIST_MM,
+  MIN_LEGIBLE_CELL_PITCH_MM,
+  CONTENT_BOX,
+  puzzlesPerPage,
+  blockLayout,
+  paginate,
+} from './layout';
+export type { Box, BlockLayout, PageLayout, PaginationResult } from './layout';
