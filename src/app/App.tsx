@@ -10,16 +10,17 @@ import { useAppStore } from './useAppStore';
 // the editor card (left) and the preview card (right) — per the committed mockup
 // (docs/design/assets/editor-preview-mockup.png). The cards host the feature
 // panels, which are placeholders until the later Phase 3 issues fill them in.
-// The shell reads `state`; later issues import `dispatch` to drive edits.
+// The shell owns `state` + `dispatch`; the editor controls (issue #32) mutate
+// state via `dispatch`, and the preview reads from `state`.
 export function App(): JSX.Element {
-  const { state } = useAppStore();
+  const { state, dispatch } = useAppStore();
   return (
     <main className="min-h-screen bg-muted p-6 font-sans text-foreground">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <AppHeader />
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[380px_1fr]">
           <Card ariaLabel={strings.editor.regionLabel}>
-            <EditorPanel />
+            <EditorPanel state={state} dispatch={dispatch} />
           </Card>
           <Card ariaLabel={strings.preview.regionLabel}>
             <PreviewPanel

@@ -215,6 +215,18 @@ human milestone-QA gate.
   are feature/app view-model state — never fields on the core `PuzzleConfig`
   (`{width,height,directions,reverse,words}`); the manual direction/reverse path
   builds the config directly, bypassing `configFromDifficulty`.
+- 2026-07-21 (issue #32, editor controls): the editor card renders the word
+  textarea, difficulty presets, grid-size + reverse, the 8-direction labelled
+  toggle group, per-puzzle header, and font family/size — each wired to the #30
+  store via `dispatch` (no new store actions needed; the #30 reducer already
+  covers every mutation, incl. the `clampGridSize`-bound `setSize`). Controls
+  reflect store state so a preset seeds the size/direction/reverse controls and
+  manual edits override afterward. The `parseWords` feature helper
+  (trim/drop-empty/dedup, normalization left to the engine) lands now and is
+  unit-tested; it is consumed at generate time in #33. Two intentional scope
+  choices: the "Generieren" button + engine wiring stay in #33 (not rendered as a
+  dead control here), and the date is a plain text field (matching the mockup's
+  literal `21.07.2026`) rather than a locale date picker.
 - 2026-07-21 (issue #31, accessible fonts): Atkinson Hyperlegible + OpenDyslexic
   (both SIL OFL 1.1) are **vendored as committed build assets** in
   `src/assets/fonts/` (latin subset, weights 400/700, woff2), each with its

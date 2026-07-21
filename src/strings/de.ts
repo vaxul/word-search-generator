@@ -14,12 +14,69 @@ export const de = {
     // Single-glyph logo badge in the header.
     logoInitial: 'W',
   },
-  // Editor card (left column). The actual input/config controls arrive in later
-  // Phase 3 issues; the shell owns the card heading + region label only.
+  // Editor card (left column). The word-list textarea + configuration controls
+  // (issue #32). UI text lives here; components read keys, never inline literals.
   editor: {
     heading: 'Puzzle erstellen',
     regionLabel: 'Puzzle-Editor',
-    placeholder: 'Die Eingabe- und Konfigurationsfelder folgen in Kürze.',
+    // Word-list textarea (one word per line, paste-friendly).
+    words: {
+      label: 'Wörter (eines pro Zeile)',
+      placeholder: 'KATZE\nHUND\nMAUS',
+    },
+    // Difficulty presets (a preset seeds size + directions + reverse).
+    difficulty: {
+      label: 'Schwierigkeit',
+      groupLabel: 'Schwierigkeitsgrad wählen',
+      easy: 'Leicht',
+      medium: 'Mittel',
+      hard: 'Schwer',
+    },
+    // Grid-size numeric input (bounded 5–30).
+    size: {
+      label: 'Gittergröße',
+      hint: '5 – 30',
+    },
+    // Reverse (backward placement) toggle.
+    reverse: {
+      label: 'Rückwärts',
+      toggle: 'Erlauben',
+    },
+    // Direction toggle group (8 compass directions, German abbreviations).
+    directions: {
+      label: 'Richtungen',
+      groupLabel: 'Erlaubte Richtungen',
+      labels: {
+        E: '→ O',
+        W: '← W',
+        N: '↑ N',
+        S: '↓ S',
+        NE: '↗ NO',
+        NW: '↖ NW',
+        SE: '↘ SO',
+        SW: '↙ SW',
+      },
+    },
+    // Per-puzzle header fields (title / theme / date), carried to the Phase 4 PDF.
+    header: {
+      label: 'Kopfzeile des Puzzles',
+      title: 'Titel',
+      theme: 'Thema',
+      date: 'Datum',
+      titlePlaceholder: 'Tiere im Wald',
+      themePlaceholder: 'Klasse 3b',
+      datePlaceholder: '21.07.2026',
+    },
+    // Font choice + size controls (design type scale), applied to the preview.
+    font: {
+      label: 'Schrift',
+      familyLabel: 'Schriftart',
+      sizeLabel: 'Schriftgröße',
+      sans: 'Standard (Inter)',
+      accessible: 'Barrierefrei (Atkinson Hyperlegible)',
+      // Suffix for a font-size option label, composed as `${size} px`.
+      sizeUnit: 'px',
+    },
   },
   // Preview card (right column). The grid rendering + solution toggle arrive in
   // later Phase 3 issues; the shell owns the heading + the empty state.
