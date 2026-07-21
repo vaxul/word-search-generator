@@ -117,27 +117,30 @@ describe('placeWords — direction control', () => {
 // --- reverse ---------------------------------------------------------------
 
 describe('placeWords — reverse', () => {
-  it('adds the opposite direction so words may run backward', () => {
-    // Only E allowed; reverse adds W. Force W by exhausting the grid width so a
-    // 5-letter word run east from col>7 would overflow — but we just assert the
-    // engine may pick W and read-back still holds.
-    const result = placeWords(
-      config({
-        width: 8,
-        height: 8,
-        words: ['ABCDE', 'FGHIJ', 'KLMNO'],
-        directions: ['E'],
-        reverse: true,
-      }),
-      mulberry32(11),
-    );
-    expect(result.unplaceable).toEqual([]);
-    const dirs = new Set(result.placed.map((p) => p.direction));
-    for (const d of dirs) {
-      expect(['E', 'W']).toContain(d);
+  // Scan several seeds and collect which directions the single placed word ran.
+  function directionsSeen(reverse: boolean): Set<Direction> {
+    const seen = new Set<Direction>();
+    for (let seed = 0; seed < 30; seed += 1) {
+      const result = placeWords(
+        config({ words: ['ABCDE'], directions: ['E'], reverse }),
+        mulberry32(seed),
+      );
+      for (const placed of result.placed) {
+        expect(readBack(result.cells, result.width, placed)).toBe(placed.word);
+        seen.add(placed.direction);
+      }
     }
-    for (const placed of result.placed) {
-      expect(readBack(result.cells, result.width, placed)).toBe(placed.word);
-    }
+    return seen;
+  }
+
+  it('places words backward (W) when reverse is on for an E-only config', () => {
+    const seen = directionsSeen(true);
+    expect(seen.has('W')).toBe(true); // backward placement actually happens
+    expect([...seen].every((d) => d === 'E' || d === 'W')).toBe(true);
+  });
+
+  it('never places backward when reverse is off', () => {
+    const seen = directionsSeen(false);
+    expect([...seen]).toEqual(['E']); // only the forward direction, never W
   });
 });
