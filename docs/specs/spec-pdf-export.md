@@ -235,3 +235,22 @@ machine check covers are verified at the human milestone-QA gate.
   words render without throwing under the embedded font, and `output('arraybuffer')`
   yields non-empty bytes starting with `%PDF`. Renderer barrel + `src/core` barrel
   re-export it. Download stays for #41.
+- 2026-07-21 (issue #40 — solution PDF renderer): added
+  `src/core/pdf/renderSolution.ts` (jsPDF, no DOM, no download).
+  `renderSolutionDoc(result, view)` mirrors `renderPuzzleDoc` — a fresh
+  `jsPDF({unit:'mm',format:'a4'})`, `registerFont` (#37), the same `paginate`
+  packing/per-block layout (#38) — but passes `result.placed` as the
+  `renderPuzzleBlock` `highlight` set (#39) so every placed word is MARKED with
+  the accent stroke, and tags each block title with a solution suffix
+  (`SOLUTION_TITLE_SUFFIX = ' — Lösung'`, overridable via the view's optional
+  `solutionSuffix`; bare label when no title). The returned document is a
+  DISTINCT object from `renderPuzzleDoc`'s (Prior decision: solution is its own
+  `-loesung` file), so #41 can download two separate PDFs. The highlighted cells
+  are computed inside `renderPuzzleBlock`/`drawHighlight` from each `PlacedWord`
+  (start + `DIRECTION_VECTORS[direction]`), so no cell math is duplicated and
+  nothing is imported from `src/features` (boundary held). Answer list = the
+  placed words; unplaceable words never drawn. Vitest asserts: distinct doc vs.
+  the puzzle, `%PDF` magic bytes, page count matches `paginate` AND the puzzle
+  page-for-page across every tier/copy count, the highlight path (incl. ä/ö/ü/ß)
+  renders without throwing, empty-placed and suffix-override/empty-title paths.
+  Renderer barrel + `src/core` barrel re-export it. Download stays for #41.

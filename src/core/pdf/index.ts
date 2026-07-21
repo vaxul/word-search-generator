@@ -28,3 +28,5 @@ export type {
   PuzzleView,
   PuzzleBlockRender,
 } from './renderPuzzle';
+export { renderSolutionDoc, SOLUTION_TITLE_SUFFIX } from './renderSolution';
+export type { SolutionView } from './renderSolution';

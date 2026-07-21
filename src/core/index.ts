@@ -49,6 +49,8 @@ export {
   registerFontAsset,
   renderPuzzleDoc,
   renderPuzzleBlock,
+  renderSolutionDoc,
+  SOLUTION_TITLE_SUFFIX,
 } from './pdf';
 export type {
   PdfFontAsset,
@@ -57,4 +59,5 @@ export type {
   PdfPuzzleHeader,
   PuzzleView,
   PuzzleBlockRender,
+  SolutionView,
 } from './pdf';
