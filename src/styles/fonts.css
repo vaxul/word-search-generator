@@ -1,0 +1,53 @@
+/*
+ * Accessible font faces — the vendored, self-hosted families behind the
+ * `--font-accessible` design token (docs/design.md / tokens.css:
+ * "Atkinson Hyperlegible", "OpenDyslexic", sans-serif).
+ *
+ * The font files live in `src/assets/fonts/` as committed build assets (both
+ * SIL Open Font License 1.1 — see the sibling `*-OFL.txt` notices). They are
+ * referenced by relative `url()`, so Vite bundles them into the build output
+ * (hashed, under the app base path) — there is NO runtime network fetch, and
+ * the app stays fully offline-capable (constitution: no runtime network calls).
+ *
+ * Only the Latin subset (weights 400 + 700, normal) is vendored — enough for
+ * the German UI incl. umlauts / ß, kept small per the spec's bundle-size risk.
+ * `font-display: swap` avoids a blocking render while a face decodes.
+ */
+
+/* Atkinson Hyperlegible — Braille Institute of America (SIL OFL 1.1). */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/atkinson-hyperlegible-latin-400-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/atkinson-hyperlegible-latin-700-normal.woff2')
+    format('woff2');
+}
+
+/* OpenDyslexic — Abbie Gonzalez (SIL OFL 1.1). */
+@font-face {
+  font-family: 'OpenDyslexic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/opendyslexic-latin-400-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'OpenDyslexic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/opendyslexic-latin-700-normal.woff2')
+    format('woff2');
+}

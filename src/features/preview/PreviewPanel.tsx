@@ -1,3 +1,5 @@
+import { fontFamilyClass } from '../../app/fontClass';
+import type { FontFamily } from '../../app/state';
 import { strings } from '../../strings';
 
 interface PreviewPanelProps {
@@ -5,6 +7,12 @@ interface PreviewPanelProps {
   readonly title: string;
   /** Whether a generation result exists — drives the empty state for now. */
   readonly hasResult: boolean;
+  /**
+   * The selected font family (store view-model). The preview honors the chosen
+   * accessible / default font (docs/design.md: the preview grid honors the
+   * selected accessible font); applied via the token-derived utility (#31).
+   */
+  readonly fontFamily: FontFamily;
 }
 
 /**
@@ -12,14 +20,16 @@ interface PreviewPanelProps {
  * (issue #30): renders the heading, the puzzle title once present, and an empty
  * state. The generated grid, word-list-to-find, un-placeable warning, and the
  * "Lösung" toggle land in later Phase 3 issues (#34, #35). UI text comes from
- * src/strings/.
+ * src/strings/. The content region applies the selected font via the
+ * token-derived `fontFamilyClass` (issue #31 wiring).
  */
 export function PreviewPanel({
   title,
   hasResult,
+  fontFamily,
 }: PreviewPanelProps): JSX.Element {
   return (
-    <div>
+    <div className={fontFamilyClass(fontFamily)}>
       <h2 className="text-lg font-semibold text-foreground">
         {strings.preview.heading}
       </h2>

@@ -25,6 +25,7 @@ export function App(): JSX.Element {
             <PreviewPanel
               title={state.header.title}
               hasResult={state.result !== null}
+              fontFamily={state.font.family}
             />
           </Card>
         </div>
