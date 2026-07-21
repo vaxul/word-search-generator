@@ -93,6 +93,15 @@ export const de = {
     metaSeparator: ' · ',
     // "Zu finden" section heading above the word chips (styled uppercase).
     wordsToFind: 'Zu finden',
+    // Puzzle/Lösung view toggle (segmented control): a static answer-key
+    // highlight, not interactive solving. `groupLabel` names the toggle group for
+    // screen readers; the two options switch the grid between the plain puzzle and
+    // the solution highlight (placed words shown with the accent color).
+    view: {
+      groupLabel: 'Ansicht',
+      puzzle: 'Puzzle',
+      solution: 'Lösung',
+    },
     // Destructive un-placeable warning: label + the exact words that did not fit,
     // joined by the list separator.
     unplaceable: {

@@ -6,6 +6,12 @@ interface PreviewGridProps {
   readonly grid: Grid;
   /** The selected font size in px (design type scale) — drives cell + glyph size. */
   readonly fontSize: number;
+  /**
+   * Row-major indices of the cells to highlight as the solution (issue #35).
+   * Empty (the default) is the plain puzzle view; a non-empty set paints those
+   * cells with the accent highlight. See {@link solutionCellIndices}.
+   */
+  readonly highlighted?: ReadonlySet<number>;
 }
 
 // A cell is a square sized from the font so bigger letters get bigger cells; the
@@ -20,6 +26,10 @@ const GRID_CLASSES = 'inline-block border-l border-t border-border bg-background
 const CELL_CLASSES =
   'flex items-center justify-center border-b border-r border-border ' +
   'font-semibold text-foreground';
+// Solution highlight (docs/design.md: "solution view highlights placed words
+// with `accent`"). The dark `foreground` glyph on the amber `accent` fill meets
+// WCAG 2.1 AA contrast (same accent + dark-label pairing as the primary action).
+const HIGHLIGHT_CLASSES = 'bg-accent';
 
 /** Slice the row-major `cells` into `height` rows of `width` for ARIA rows. */
 function toRows(grid: Grid): readonly (readonly string[])[] {
@@ -39,7 +49,11 @@ function toRows(grid: Grid): readonly (readonly string[])[] {
  * than reflowing (spec risk mitigation). The plain puzzle view only — the
  * "Lösung" highlight is issue #35.
  */
-export function PreviewGrid({ grid, fontSize }: PreviewGridProps): JSX.Element {
+export function PreviewGrid({
+  grid,
+  fontSize,
+  highlighted,
+}: PreviewGridProps): JSX.Element {
   const cellPx = Math.round(fontSize * CELL_RATIO);
   const cell = { width: `${cellPx}px`, height: `${cellPx}px` };
   return (
@@ -51,16 +65,24 @@ export function PreviewGrid({ grid, fontSize }: PreviewGridProps): JSX.Element {
     >
       {toRows(grid).map((row, rowIndex) => (
         <div key={rowIndex} role="row" className="flex">
-          {row.map((letter, colIndex) => (
-            <div
-              key={colIndex}
-              role="gridcell"
-              className={CELL_CLASSES}
-              style={cell}
-            >
-              {letter}
-            </div>
-          ))}
+          {row.map((letter, colIndex) => {
+            const isHighlighted =
+              highlighted?.has(rowIndex * grid.width + colIndex) ?? false;
+            return (
+              <div
+                key={colIndex}
+                role="gridcell"
+                className={
+                  isHighlighted
+                    ? `${CELL_CLASSES} ${HIGHLIGHT_CLASSES}`
+                    : CELL_CLASSES
+                }
+                style={cell}
+              >
+                {letter}
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>
