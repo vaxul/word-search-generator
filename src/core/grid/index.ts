@@ -11,3 +11,5 @@ export {
 } from './directions';
 export type { DirectionVector } from './directions';
 export { normalizeWord } from './normalize';
+export { EMPTY_CELL, placeWords } from './placement';
+export type { PlacementResult } from './placement';
