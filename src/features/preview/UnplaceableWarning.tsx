@@ -6,10 +6,12 @@ interface UnplaceableWarningProps {
 }
 
 // docs/design.md Word-list textarea component: un-placeable warnings use the
-// `destructive` token — a destructive border + tinted background + destructive
-// text. High enough contrast for WCAG 2.1 AA (dark red on a light tint).
+// `destructive` token — a destructive border + destructive message. The text
+// sits on the card's `background` (white), where `destructive` #dc2626 clears
+// WCAG 2.1 AA (~4.8:1); a tinted fill would drop it below 4.5:1, so it is
+// intentionally omitted (design specifies only border + message).
 const WARNING_CLASSES =
-  'mt-4 rounded-md border border-destructive bg-destructive/10 p-3 ' +
+  'mt-4 rounded-md border border-destructive bg-background p-3 ' +
   'text-sm text-destructive';
 
 /**

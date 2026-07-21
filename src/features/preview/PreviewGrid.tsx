@@ -16,38 +16,51 @@ const CELL_RATIO = 1.9;
 // (`foreground` on `background`), a `border` between cells. Grid lines come from
 // a top/left border on the container plus a right/bottom border per cell, so
 // interior lines are single-width and the outer edge is closed.
-const GRID_CLASSES = 'inline-grid border-l border-t border-border bg-background';
+const GRID_CLASSES = 'inline-block border-l border-t border-border bg-background';
 const CELL_CLASSES =
   'flex items-center justify-center border-b border-r border-border ' +
   'font-semibold text-foreground';
 
+/** Slice the row-major `cells` into `height` rows of `width` for ARIA rows. */
+function toRows(grid: Grid): readonly (readonly string[])[] {
+  const rows: string[][] = [];
+  for (let r = 0; r < grid.height; r += 1) {
+    const start = r * grid.width;
+    rows.push(grid.cells.slice(start, start + grid.width) as string[]);
+  }
+  return rows;
+}
+
 /**
  * The puzzle letter grid — the preview centerpiece (issue #34). Renders every
- * `grid.cells` glyph in a fixed-pitch CSS grid, honoring the selected font size
- * (glyph + square cell size). Large grids (up to 30×30) keep a fixed cell pitch
- * and scroll inside the parent container rather than reflowing (spec risk
- * mitigation). The plain puzzle view only — the "Lösung" highlight is issue #35.
+ * `grid.cells` glyph in a fixed-pitch grid (ARIA `grid`/`row`/`gridcell`),
+ * honoring the selected font size (glyph + square cell size). Large grids (up to
+ * 30×30) keep a fixed cell pitch and scroll inside the parent container rather
+ * than reflowing (spec risk mitigation). The plain puzzle view only — the
+ * "Lösung" highlight is issue #35.
  */
 export function PreviewGrid({ grid, fontSize }: PreviewGridProps): JSX.Element {
   const cellPx = Math.round(fontSize * CELL_RATIO);
+  const cell = { width: `${cellPx}px`, height: `${cellPx}px` };
   return (
     <div
       role="grid"
       aria-label={strings.preview.gridLabel}
       className={GRID_CLASSES}
-      style={{
-        gridTemplateColumns: `repeat(${grid.width}, ${cellPx}px)`,
-        fontSize: `${fontSize}px`,
-      }}
+      style={{ fontSize: `${fontSize}px` }}
     >
-      {grid.cells.map((letter, index) => (
-        <div
-          key={index}
-          role="gridcell"
-          className={CELL_CLASSES}
-          style={{ height: `${cellPx}px` }}
-        >
-          {letter}
+      {toRows(grid).map((row, rowIndex) => (
+        <div key={rowIndex} role="row" className="flex">
+          {row.map((letter, colIndex) => (
+            <div
+              key={colIndex}
+              role="gridcell"
+              className={CELL_CLASSES}
+              style={cell}
+            >
+              {letter}
+            </div>
+          ))}
         </div>
       ))}
     </div>
