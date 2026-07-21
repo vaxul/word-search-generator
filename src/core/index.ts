@@ -38,3 +38,14 @@ export type {
   PlacementResult,
   RandomFn,
 } from './grid';
+
+// PDF layer (issue #37): jsPDF Unicode-font embedding so German umlauts/ß render.
+// A4 layout math + puzzle/solution rendering re-export here as they land.
+export {
+  PDF_FONTS,
+  PDF_FONT_FOR_FAMILY,
+  pdfFontForFamily,
+  registerFont,
+  registerFontAsset,
+} from './pdf';
+export type { PdfFontAsset, PdfFontFamily, PdfFontId } from './pdf';
