@@ -215,6 +215,17 @@ human milestone-QA gate.
   are feature/app view-model state — never fields on the core `PuzzleConfig`
   (`{width,height,directions,reverse,words}`); the manual direction/reverse path
   builds the config directly, bypassing `configFromDifficulty`.
+- 2026-07-21 (issue #31, accessible fonts): Atkinson Hyperlegible + OpenDyslexic
+  (both SIL OFL 1.1) are **vendored as committed build assets** in
+  `src/assets/fonts/` (latin subset, weights 400/700, woff2), each with its
+  `*-OFL.txt` notice. Files were obtained from the `@fontsource/*` npm packages
+  and copied in — no runtime font dependency remains. `@font-face` declarations
+  live in `src/styles/fonts.css` (imported by `main.css`) with relative `url()`,
+  so Vite bundles them under the app base path — **no runtime network fetch**
+  (constitution: offline-capable). The `--font-accessible` token thus resolves to
+  the vendored families; default stays Inter (`--font-sans`). A component applies
+  the chosen font via the token-derived `fontFamilyClass` helper (`src/app/`);
+  the `PreviewPanel` consumes it (design: the preview honors the selected font).
 - 2026-07-21 (issue #30, foundation shell): the app store is a `useReducer` in
   `src/app/state.ts` (`AppState` = words + `ConfigInputs` view-model + header +
   `FontSettings` + `GenerationResult | null`) exposed via a `useAppStore` hook;

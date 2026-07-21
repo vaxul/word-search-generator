@@ -2,9 +2,11 @@
  * Application stylesheet entry point.
  *
  * Pulls in Tailwind v4, then the design tokens (which register the Tailwind
- * theme via `@theme` — see tokens.css). Imported once from the app entry
- * (src/main.tsx). Token values live in tokens.css; source of truth is
- * docs/design.md.
+ * theme via `@theme` — see tokens.css), then the vendored `@font-face`
+ * declarations that back the `--font-accessible` token (see fonts.css).
+ * Imported once from the app entry (src/main.tsx). Token values live in
+ * tokens.css; source of truth is docs/design.md.
  */
 @import "tailwindcss";
 @import "./tokens.css";
+@import "./fonts.css";
