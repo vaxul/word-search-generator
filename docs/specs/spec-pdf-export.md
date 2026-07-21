@@ -202,3 +202,17 @@ machine check covers are verified at the human milestone-QA gate.
   `--font-accessible` stack), OpenDyslexic available via `PDF_FONTS`. A Vitest
   spec embeds each font and asserts ä/ö/ü/ß render (positive `ß` glyph width, no
   throw). Layout math + renderers remain for #38–#41.
+- 2026-07-21 (issue #38 — A4 layout math): added pure `src/core/pdf/layout.ts`
+  (no jsPDF, no DOM) with the geometry the renderers (#39/#40) consume. Constants
+  `A4_WIDTH_MM`/`A4_HEIGHT_MM` (210×297), `PAGE_MARGIN_MM` (15) → `CONTENT_BOX`
+  ≈180×267 mm. `puzzlesPerPage(size)` = the gate mapping (≤10→4, 11–17→2, ≥18→1);
+  block grid shape 4-up=2×2, 2-up=1×2 (stacked), 1-up=1×1 per the layout diagram,
+  with an 8 mm gutter. Each block reserves a 12 mm header strip (top) + 14 mm
+  word-list strip (bottom); `blockLayout` fits the largest **square** grid into
+  the remaining area and centres it, so `cellPitch = side/size` fills exactly and
+  never overflows the block/content box. Legibility floor
+  `MIN_LEGIBLE_CELL_PITCH_MM = 5` is guaranteed by the tier assignment (worst
+  case ≈6 mm at size 17/2-up and size 30/1-up) and asserted across sizes 5–30.
+  `paginate(size, copies)` → `{ puzzlesPerPage, pageCount, pages[] }`, the partial
+  last page carrying its blocks in the leading slots (no clipping). Deterministic
+  in `(size, copies)`; unit-tested for every tier boundary + a partial page.
