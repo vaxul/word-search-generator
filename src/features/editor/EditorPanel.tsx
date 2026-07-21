@@ -1,6 +1,7 @@
 import { type Dispatch } from 'react';
 import type { AppAction, AppState } from '../../app/state';
 import { strings } from '../../strings';
+import { ExportAction } from '../export';
 import { DifficultyPresets } from './DifficultyPresets';
 import { DirectionToggles } from './DirectionToggles';
 import { FontControls } from './FontControls';
@@ -70,6 +71,7 @@ export function EditorPanel({
         onSizeChange={(size) => dispatch({ type: 'setFontSize', size })}
       />
       <GenerateAction state={state} dispatch={dispatch} />
+      <ExportAction result={state.result} header={header} font={font} />
     </div>
   );
 }
