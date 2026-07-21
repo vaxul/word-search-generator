@@ -24,9 +24,9 @@ export function App(): JSX.Element {
           </Card>
           <Card ariaLabel={strings.preview.regionLabel}>
             <PreviewPanel
-              title={state.header.title}
-              hasResult={state.result !== null}
-              fontFamily={state.font.family}
+              result={state.result}
+              header={state.header}
+              font={state.font}
             />
           </Card>
         </div>

@@ -74,12 +74,13 @@ describe('editor toggles and header/font controls', () => {
     expect(reverse).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('editing the title header field updates state (shown in the preview)', () => {
+  it('editing the title header field updates the control state', () => {
     render(<App />);
-    fireEvent.change(screen.getByLabelText(s.header.title), {
-      target: { value: 'Tiere im Wald' },
-    });
-    expect(screen.getByText('Tiere im Wald')).toBeInTheDocument();
+    // The header only renders inside the preview once a puzzle exists (mockup);
+    // before generation the round-trip is observed on the input value itself.
+    const title = screen.getByLabelText(s.header.title) as HTMLInputElement;
+    fireEvent.change(title, { target: { value: 'Tiere im Wald' } });
+    expect(title.value).toBe('Tiere im Wald');
   });
 
   it('changing the font family updates the font control state', () => {
