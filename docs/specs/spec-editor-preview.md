@@ -227,6 +227,21 @@ human milestone-QA gate.
   choices: the "Generieren" button + engine wiring stay in #33 (not rendered as a
   dead control here), and the date is a plain text field (matching the mockup's
   literal `21.07.2026`) rather than a locale date picker.
+- 2026-07-21 (issue #33, generate action): the primary "Puzzle generieren"
+  button (`GenerateAction`, amber `accent` bg + dark `foreground` label for WCAG
+  2.1 AA — white-on-amber is not AA) runs generation only on click (no live
+  auto-regeneration). The feature helper `generatePuzzle.ts` mints a fresh 32-bit
+  per-run seed via `Math.random` (allowed outside `src/core`; the seed is never
+  surfaced or persisted) and builds the core `PuzzleConfig` **directly** from the
+  store's `ConfigInputs` (`buildPuzzleConfig`) rather than via
+  `configFromDifficulty` — the store's resolved size/directions/reverse are
+  authoritative for both the preset and manual paths, so the single direct build
+  covers manual overrides. `parseWords` (trim/drop-empty/dedup, normalization left
+  to the engine) is consumed here; the `GenerationResult` is stored via the
+  existing `setResult` action (no new store action needed). Storing the result is
+  the extent of #33 — the preview grid render (#34) and solution toggle (#35) stay
+  out of scope; until #34 the preview shows its empty state, which the component
+  test uses as the observable proxy for "a result is in state".
 - 2026-07-21 (issue #31, accessible fonts): Atkinson Hyperlegible + OpenDyslexic
   (both SIL OFL 1.1) are **vendored as committed build assets** in
   `src/assets/fonts/` (latin subset, weights 400/700, woff2), each with its

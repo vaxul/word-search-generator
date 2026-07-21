@@ -4,6 +4,7 @@ import { strings } from '../../strings';
 import { DifficultyPresets } from './DifficultyPresets';
 import { DirectionToggles } from './DirectionToggles';
 import { FontControls } from './FontControls';
+import { GenerateAction } from './GenerateAction';
 import { GridSizeReverse } from './GridSizeReverse';
 import { HeaderFields } from './HeaderFields';
 import { WordInput } from './WordInput';
@@ -21,8 +22,9 @@ interface EditorPanelProps {
  * group, the per-puzzle header fields, and the font controls, each wired to the
  * #30 store via `dispatch`. Selecting a preset seeds size + directions + reverse;
  * manual edits afterward override those seeded values (spec Prior decision). The
- * "Generieren" action + its engine wiring are issue #33; all UI text is German
- * from src/strings/.
+ * primary "Puzzle generieren" action ({@link GenerateAction}, issue #33) closes
+ * the panel: it builds the core config from state and runs the engine. All UI
+ * text is German from src/strings/.
  */
 export function EditorPanel({
   state,
@@ -67,6 +69,7 @@ export function EditorPanel({
         onFamilyChange={(family) => dispatch({ type: 'setFontFamily', family })}
         onSizeChange={(size) => dispatch({ type: 'setFontSize', size })}
       />
+      <GenerateAction state={state} dispatch={dispatch} />
     </div>
   );
 }
