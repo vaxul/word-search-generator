@@ -13,9 +13,14 @@ step exists.
 
 What is true when this work is done:
 
-- [ ] `src/features/editor/` collects a word list plus configuration (grid size,
-      allowed directions, reverse, difficulty preset, per-puzzle header, font
-      choice + size) into a `PuzzleConfig` and invokes the Phase 2 `generate()`.
+- [ ] `src/features/editor/` collects a word list plus configuration and builds
+      the Phase 2 `PuzzleConfig` (`{ width, height, directions, reverse, words }`)
+      to invoke `generate()`. The per-puzzle header, font choice + size, and the
+      chosen difficulty are **feature/app view-model state** (the header/font
+      destined for the Phase 4 PDF; the difficulty mapped to a config via the
+      engine's `configFromDifficulty`) — **never** fields on the core
+      `PuzzleConfig`, whose sole role is generation inputs (the `src/core`
+      boundary).
 - [ ] `src/features/preview/` renders the generated grid with fixed-pitch cells,
       honoring the selected accessible font, plus the list of words to find.
 - [ ] Words that cannot be placed are surfaced clearly to the user
@@ -120,7 +125,8 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 | Direction control = a **labelled toggle group** over the 8 directions + a reverse toggle; presets set them as data | `docs/design.md` Components ("Direction toggles are a labelled toggle group, not raw checkboxes"); presets are Phase 2 data. | 2026-07-21 |
 | Un-placeable words shown as a **`destructive`-styled** message near the word input | `docs/design.md` Word-list textarea component; `docs/vision.md` "never a silent omission". | 2026-07-21 |
 | Accessible fonts **Atkinson Hyperlegible + OpenDyslexic** vendored as OFL build assets; default is Inter (design token `font-sans`) | `docs/design.md` `font-accessible` token; Phase 1 deferred font bundling to "when the preview/editor needs them (Phase 3)". | 2026-07-21 |
-| **Adjustable font size is a puzzle-display property** (uses the design type scale), applied to the preview and carried on the puzzle for the Phase 4 print — not a preview-only view setting | Keeps a single source of truth for letter size across screen and print, so the Phase 4 PDF honors the same choice. | 2026-07-21 |
+| **Adjustable font size is a puzzle-display property** (uses the design type scale), applied to the preview and carried as **feature/app view-model state** (alongside the header + font choice) for the Phase 4 print — never a field on the core `PuzzleConfig`, and not a preview-only view setting | Keeps a single source of truth for letter size across screen and print so the Phase 4 PDF honors the same choice, while preserving the `src/core` boundary (the core type stays `{width,height,directions,reverse,words}`). | 2026-07-21 |
+| **Preset-select semantics:** selecting a difficulty preset seeds the size + direction set + reverse controls (via the Phase 2 mapping); the user may then override directions / reverse / size manually, and manual edits win. For the manual path the feature layer builds the `PuzzleConfig` directly — the engine's `configFromDifficulty` helper only emits the preset's own directions plus a square size override, so it does not cover manual direction/reverse edits | The mockup depicts exactly this (Medium preset with reverse manually toggled on); the implementer needs the explicit rule that a preset seeds initial values and manual edits override, and that the manual path bypasses `configFromDifficulty`. | 2026-07-21 |
 | OPEN — **On-screen solution preview**: does Phase 3 include a toggle that highlights the placed words on the grid (accent), or is all solution rendering deferred to the Phase 4 PDF? | resolved at the spec-acceptance gate | — |
 | OPEN — **Generate trigger**: an explicit primary "Generate" button (re-rolls with a fresh seed), or live auto-regeneration on every config change (debounced)? | resolved at the spec-acceptance gate | — |
 
@@ -151,6 +157,10 @@ spec-acceptance gate** as part of the spec package — not a separate stop.
   Select/control, Preview grid, Card/panel) and token palette.
 - The implementer consumes `src/styles/tokens.css` (already wired) plus this
   referenced mockup; it never reaches into the design tool.
+- Contrast note (WCAG 2.1 AA): the amber `accent` primary action uses the **dark**
+  `foreground` for its label (AA-compliant; white-on-amber is **not** AA and must
+  not be used); `secondary`-colored text stays at normal size (borderline AA when
+  small). The committed mockup follows both.
 
 ## Verification
 
