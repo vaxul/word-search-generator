@@ -184,3 +184,15 @@ this phase, so the QA gate is code-level rather than a `UI check`).
   (larger grids per human preference, prior-art L1→L3 direction progression).
 - 2026-07-20 (spec-acceptance gate): random-fill alphabet resolved — full German
   alphabet (A–Z) plus any ä/ö/ü/ß present in the words.
+- 2026-07-21 (#9, core/model): domain types authored in `src/core/model/`.
+  Modeling choices: `Grid` uses a row-major single-dimension `cells: readonly
+  string[]` (cell at `(row,col)` = `cells[row*width+col]`) to mirror the engine's
+  grid-as-1D-array Prior decision so the engine returns its working array with no
+  transform; `Coordinate` is `{row, col}` (zero-based); `reverse` is a boolean
+  flag on `PuzzleConfig` (not a 9th–16th direction) per the Prior decision, so
+  `PlacedWord.direction` is one of the eight `Direction`s; the `CAT NE @ (5,14)`
+  answer-key form is a Phase-4 rendering concern, not stored on `PlacedWord`; the
+  determinism seed is a generate-time parameter (issue #13), deliberately NOT a
+  `PuzzleConfig` field, matching the #9 acceptance list. `Difficulty` is the
+  lowercase union `'easy'|'medium'|'hard'`; preset→config mapping is engine data,
+  not a type. All collection fields are `readonly`.
