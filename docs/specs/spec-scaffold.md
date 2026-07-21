@@ -241,3 +241,15 @@ covers are checked at the human milestone-QA gate).
   JSX previously living in `src/main.tsx`; `main.tsx` now only mounts `<App/>`.
   All styling stays token-derived Tailwind utilities (`bg-background`,
   `text-primary`, `text-secondary`, `font-sans`, the 4px spacing scale).
+- 2026-07-21 (#7 — GitHub Actions Pages deploy): single workflow
+  `.github/workflows/deploy.yml`, two jobs — `build` (checkout, setup-node with
+  `node-version-file: .nvmrc` + npm cache, `npm ci`, `npm run verify`,
+  `npm run build`, `configure-pages`, `upload-pages-artifact path: dist`) and
+  `deploy` (`needs: build`, `environment: github-pages`, `deploy-pages`).
+  `verify` runs before `build` so a red gate fails the job before any artifact
+  is produced — deploy never ships a broken commit. Trigger `push` to `main` +
+  `workflow_dispatch` (Prior decisions). `permissions: contents:read,
+  pages:write, id-token:write`; `concurrency: group pages, cancel-in-progress:
+  false` (a push mid-deploy queues rather than aborting a half-applied publish).
+  Action majors: `checkout@v4`, `setup-node@v4`, `configure-pages@v5`,
+  `upload-pages-artifact@v3`, `deploy-pages@v4` (current as of 2026-07-21).
