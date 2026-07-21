@@ -184,6 +184,22 @@ this phase, so the QA gate is code-level rather than a `UI check`).
   (larger grids per human preference, prior-art L1→L3 direction progression).
 - 2026-07-20 (spec-acceptance gate): random-fill alphabet resolved — full German
   alphabet (A–Z) plus any ä/ö/ü/ß present in the words.
+- 2026-07-21 (#10, core/grid primitives): authored `src/core/grid/` — a pinned
+  seeded PRNG, the compass direction vectors, and German-aware normalization.
+  Decisions: (a) PRNG = **mulberry32**, a tiny pure `(seed:number) => () =>
+  number` factory returning floats in [0,1); `Math.random()` stays banned in
+  src/core. A companion `seedFromString` (xfnv1a hash) gives a deterministic
+  string→32-bit-seed reduction for callers that seed from a textual key. (b)
+  Reverse placement is exposed two ways over the fixed 8-direction set — a
+  vector-level `reverseVector` (negate the `(dRow,dCol)` step) and a
+  direction-level `oppositeDirection` (E↔W, N↔S, NE↔SW, NW↔SE, involutive) — so
+  the placement engine can walk a word backward without adding reverse
+  directions, matching the model's `reverse`-as-a-flag decision. (c) **ß glyph:
+  kept as lowercase `ß` (U+00DF)**, a single cell, rather than capital `ẞ`
+  (U+1E9E): both are one code point, but `ß` renders in effectively every font
+  (incl. the later dyslexia-friendly print font) whereas `ẞ` is often missing.
+  `normalizeWord` upper-cases per code point (ä/ö/ü→Ä/Ö/Ü natively) and collapses
+  either eszett form to a single `ß`, never the bare-`toUpperCase` `ß`→`SS`.
 - 2026-07-21 (#9, core/model): domain types authored in `src/core/model/`.
   Modeling choices: `Grid` uses a row-major single-dimension `cells: readonly
   string[]` (cell at `(row,col)` = `cells[row*width+col]`) to mirror the engine's
