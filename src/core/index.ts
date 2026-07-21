@@ -18,10 +18,12 @@ export type {
 export {
   DIRECTIONS,
   DIRECTION_VECTORS,
+  EMPTY_CELL,
   mulberry32,
   normalizeWord,
   oppositeDirection,
+  placeWords,
   reverseVector,
   seedFromString,
 } from './grid';
-export type { DirectionVector, RandomFn } from './grid';
+export type { DirectionVector, PlacementResult, RandomFn } from './grid';

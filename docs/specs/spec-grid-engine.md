@@ -177,6 +177,29 @@ this phase, so the QA gate is code-level rather than a `UI check`).
 
 ## Decision log
 
+- 2026-07-21 (#11, placement engine): authored `src/core/grid/placement.ts` —
+  deterministic word placement into the grid-as-1D-array, producing the PLACED
+  grid (`cells` = one glyph per occupied cell, `EMPTY_CELL` `''` elsewhere; the
+  alphabet-biased random fill of empty cells is #12) plus `PlacedWord[]` and the
+  normalized-form un-placeable list. Decisions: (a) **Reverse = opposite
+  direction**, not a distinct direction: with `reverse` on, the allowed set is
+  expanded by each direction's `oppositeDirection`, so a backward word is
+  recorded as running in the opposite compass direction (`PlacedWord.direction`
+  stays one of the 8) — matching the model's `reverse`-as-a-flag decision.
+  (b) **Bounded retry budget = the full shuffled candidate set** of
+  `(direction, start-cell)` options (`directions × width × height`): the PRNG
+  Fisher–Yates-shuffles it once per word and takes the first in-bounds,
+  overlap-compatible candidate. This is finite/bounded (no infinite retry, no
+  `Math.random`), deterministic under a fixed seed, AND complete-per-word — it
+  never falsely reports a word un-placeable when a compatible slot exists in the
+  current grid, directly mitigating the spec's "over-reports un-placeable" risk.
+  Placement stays greedy per word (no backtracking) per the retry-based Prior
+  decision; the Jamis Buck backtracking escalation remains available if a
+  measured need arises. (c) **Un-placeable reports the NORMALIZED word form**
+  (matching `placed[i].word`) so the engine speaks one vocabulary; a word longer
+  than every grid span collects no in-bounds candidate and is reported, never a
+  crash; an empty word (normalizing to `''`) is reported un-placeable rather
+  than "placed" into zero cells.
 - 2026-07-20: Phase split from `docs/roadmap.md`; Phase 2 owns `core/model` +
   `core/grid` only — no rendering (Phase 3) or PDF (Phase 4).
 - 2026-07-20 (spec-acceptance gate): difficulty presets resolved — Easy 12×12
