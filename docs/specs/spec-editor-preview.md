@@ -55,10 +55,11 @@ What is true when this work is done:
 - **Font controls** — accessible-font toggle (default Inter → Atkinson
   Hyperlegible / OpenDyslexic) and an adjustable font size (design type scale),
   applied to the preview grid.
-- **Generate action** — the single primary action that runs `generate()` with an
-  app-generated seed and shows the result (see Prior decisions / OPEN).
-- **Preview** — the generated grid, the word-list-to-find, and the un-placeable
-  warning. (An on-screen solution view is an OPEN decision — see below.)
+- **Generate action** — the single primary "Generieren" button that runs
+  `generate()` with a fresh app-generated seed each click and shows the result.
+- **Preview** — the generated grid, the word-list-to-find, the un-placeable
+  warning, and a **"Lösung" toggle** that highlights the placed words on the grid
+  (`accent`) as a static answer-key view.
 - **App state wiring** in `src/app/` and centralized German strings in
   `src/strings/`.
 - **Accessible-font assets** — vendor Atkinson Hyperlegible and OpenDyslexic (both
@@ -71,8 +72,8 @@ What is true when this work is done:
 - **Multiple puzzles per A4 page** — Phase 4 packing; the Phase 3 preview shows a
   single puzzle.
 - **Interactive on-screen solving / marking** — `docs/vision.md` non-goal (this is
-  a print tool, not a game). Rendering a static solution *highlight* is the OPEN
-  decision below; interactive solving is never built.
+  a print tool, not a game). The static solution *highlight* toggle (in scope
+  above) is included; interactive solving is never built.
 - **Save / load config, batch / book mode, word-list templates, user-facing seed
   / reproducibility** — `docs/vision.md` "Out".
 
@@ -127,14 +128,14 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 | Accessible fonts **Atkinson Hyperlegible + OpenDyslexic** vendored as OFL build assets; default is Inter (design token `font-sans`) | `docs/design.md` `font-accessible` token; Phase 1 deferred font bundling to "when the preview/editor needs them (Phase 3)". | 2026-07-21 |
 | **Adjustable font size is a puzzle-display property** (uses the design type scale), applied to the preview and carried as **feature/app view-model state** (alongside the header + font choice) for the Phase 4 print — never a field on the core `PuzzleConfig`, and not a preview-only view setting | Keeps a single source of truth for letter size across screen and print so the Phase 4 PDF honors the same choice, while preserving the `src/core` boundary (the core type stays `{width,height,directions,reverse,words}`). | 2026-07-21 |
 | **Preset-select semantics:** selecting a difficulty preset seeds the size + direction set + reverse controls (via the Phase 2 mapping); the user may then override directions / reverse / size manually, and manual edits win. For the manual path the feature layer builds the `PuzzleConfig` directly — the engine's `configFromDifficulty` helper only emits the preset's own directions plus a square size override, so it does not cover manual direction/reverse edits | The mockup depicts exactly this (Medium preset with reverse manually toggled on); the implementer needs the explicit rule that a preset seeds initial values and manual edits override, and that the manual path bypasses `configFromDifficulty`. | 2026-07-21 |
-| OPEN — **On-screen solution preview**: does Phase 3 include a toggle that highlights the placed words on the grid (accent), or is all solution rendering deferred to the Phase 4 PDF? | resolved at the spec-acceptance gate | — |
-| OPEN — **Generate trigger**: an explicit primary "Generate" button (re-rolls with a fresh seed), or live auto-regeneration on every config change (debounced)? | resolved at the spec-acceptance gate | — |
+| **On-screen solution preview: included in Phase 3** — a "Lösung" toggle highlights the placed words on the grid with the `accent` color (a static answer-key view, not interactive solving) | Resolved at the spec-acceptance gate (2026-07-21). `docs/design.md` sanctions the solution-highlight view in the Preview grid; a static highlight is not the interactive solving `docs/vision.md` bars, and the engine already returns placement coordinates. | 2026-07-21 |
+| **Generate trigger: an explicit primary "Generieren" button** — runs generation and re-rolls with a fresh app-generated seed each click; no live auto-regeneration | Resolved at the spec-acceptance gate (2026-07-21). Matches `docs/design.md`'s single primary action; avoids chaotic re-rolls on every keystroke and keeps the seed re-roll user-controlled. | 2026-07-21 |
 
-`docs/design.md` names generate a "primary action" (button) while `docs/vision.md`
-says "live preview" — the trigger decision is genuinely open and settled at the
-gate. The solution-preview decision sits between `docs/design.md` (Preview grid
-"solution view highlights placed words with accent") and `docs/vision.md` (no
-on-screen solving) — also settled at the gate.
+Both formerly-open decisions were resolved at the spec-acceptance gate
+(2026-07-21): the solution view is **included in Phase 3** as a static
+answer-key highlight toggle, and generation runs on an **explicit primary
+button** (no live auto-regeneration). See the two Prior decisions rows above and
+the Decision log.
 
 ## Tracking
 
@@ -182,6 +183,9 @@ human milestone-QA gate.
       changing font size changes the rendered letter size.
 - [ ] Component test: all rendered UI text comes from `src/strings/` (no German
       literals in components — lint guard + assertion).
+- [ ] Component test: the "Lösung" toggle switches the preview to the solution
+      view, highlighting the placed words (`accent`); toggling back hides them.
+      No interactive solving is present.
 - [ ] **[QA gate — UI check]** The editor + preview screen renders per the
       committed mockup; controls work end-to-end (words → config → generate →
       preview); the preview is legible; the dyslexia-friendly font applies; and
@@ -202,3 +206,12 @@ human milestone-QA gate.
 - 2026-07-21: Phase split from `docs/roadmap.md`; Phase 3 owns the editor +
   preview UI and app state wiring only — no PDF/export (Phase 4), no interactive
   solving (vision non-goal).
+- 2026-07-21 (spec-acceptance gate): on-screen solution preview **included in
+  Phase 3** as a static "Lösung" highlight toggle (design-doc sanctioned; not the
+  interactive solving vision bars).
+- 2026-07-21 (spec-acceptance gate): generation runs on an **explicit primary
+  "Generieren" button** with a fresh seed per click — no live auto-regeneration.
+- 2026-07-21 (spec review): per-puzzle header, font choice/size, and difficulty
+  are feature/app view-model state — never fields on the core `PuzzleConfig`
+  (`{width,height,directions,reverse,words}`); the manual direction/reverse path
+  builds the config directly, bypassing `configFromDifficulty`.
