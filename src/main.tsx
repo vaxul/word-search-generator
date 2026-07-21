@@ -1,11 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { App } from './app/App';
 import './styles/main.css';
 
-// Trivial placeholder shell proving the React + Vite + Tailwind + TypeScript
-// pipeline. The utility classes below resolve to design-token values (see
-// src/styles/tokens.css ← docs/design.md), proving the Tailwind-to-tokens
-// wiring end-to-end. The real app shell and strings module arrive later.
+// Entry point: mounts the app shell (src/app/App.tsx). The shell renders its
+// German text through src/strings/ and styles it with token-derived Tailwind
+// utilities (src/styles/tokens.css ← docs/design.md).
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Root element #root not found');
@@ -13,9 +13,6 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <main className="min-h-screen bg-background p-8 font-sans text-foreground">
-      <h1 className="text-2xl font-bold text-primary">Wortsuche-Generator</h1>
-      <p className="mt-4">Scaffold läuft.</p>
-    </main>
+    <App />
   </StrictMode>,
 );
