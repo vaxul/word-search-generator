@@ -2,4 +2,5 @@
 // Each feature owns its own folder + barrel; the export feature lands in Phase 4.
 // UI text always comes from src/strings/, never inline.
 export { EditorPanel } from './editor';
+export { ExportAction } from './export';
 export { PreviewPanel } from './preview';

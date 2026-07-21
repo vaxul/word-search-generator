@@ -257,3 +257,33 @@ machine check covers are verified at the human milestone-QA gate.
   page-for-page across every tier/copy count, the highlight path (incl. ä/ö/ü/ß)
   renders without throwing, empty-placed and suffix-override/empty-title paths.
   Renderer barrel + `src/core` barrel re-export it. Download stays for #41.
+- 2026-07-21 (issue #41 — export action + two-file download): added
+  `src/features/export/` — the FEATURE-layer download that closes Phase 4.
+  `download.ts` holds the one place the app touches DOM/browser APIs to save a
+  file: `downloadBlob(blob, name)` opens a `URL.createObjectURL` object URL,
+  clicks a transient `<a download>`, then revokes the URL in a `finally` (no
+  leak); `downloadPdf(doc, name)` feeds it `doc.output('blob')` — in-memory, no
+  network. `exportPuzzle.ts` orchestrates: `exportPuzzlePdfs(result, puzzleView,
+  solutionView, parts)` renders the puzzle via `renderPuzzleDoc` (#39) and the
+  SEPARATE solution via `renderSolutionDoc` (#40) and downloads TWO distinct
+  files sharing a sanitized title stem — `<stem>-raetsel.pdf` +
+  `<stem>-loesung.pdf` (Prior decision: two files, never merged).
+  `sanitizeFilenameStem(title, fallback)` folds diacritics (NFKD + strip
+  combining marks) and maps ß→ss via ASCII-escaped regexes (`̀..`, `ß`)
+  so no non-ASCII literal lives outside `src/strings/`, lowercases, collapses
+  non-`[a-z0-9]` runs to single hyphens, and falls back when empty.
+  `ExportAction.tsx` is the amber-accent primary DOWNLOAD button (design.md's
+  generate/download primary language; dark `foreground` label = WCAG AA, visible
+  `primary` focus ring, `muted` disabled state), wired into the editor next to
+  "Puzzle generieren"; it builds the puzzle + solution view-models from the store
+  (header, font family + size) and is DISABLED (and handler-guarded) while
+  `result === null`. The German action label, solution suffix (` — Lösung`), and
+  the download filename parts (fallback `wortsuche`, `-raetsel`/`-loesung`,
+  `.pdf`) live in `src/strings/de.ts` (`strings.export`). Boundary held:
+  `src/features/export` imports `src/core` only (never the reverse); the DOM lives
+  here, not in core. Vitest: the button is disabled with no result and enabled
+  with one, a click downloads exactly two files with the `-raetsel`/`-loesung`
+  names (real path; only `URL.createObjectURL`/`revokeObjectURL` + anchor click
+  stubbed), the empty-title fallback stem, and the pure `sanitizeFilenameStem`
+  rules (diacritic fold, ß→ss, hyphen collapse, fallback). This completes
+  milestone #4.

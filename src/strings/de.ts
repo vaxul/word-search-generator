@@ -109,6 +109,26 @@ export const de = {
       separator: ', ',
     },
   },
+  // Export feature (src/features/export). The download action lives with the
+  // editor; it renders the puzzle + a genuinely separate solution PDF and
+  // downloads two files. UI text + the German solution suffix + the German
+  // download filenames live here (constitution: German text centralized).
+  export: {
+    // Primary download action label (amber accent, dark label for WCAG AA).
+    action: 'Als PDF herunterladen',
+    // Appended to each solution block title so the sheet reads as the answer key
+    // (e.g. `Tiere` → `Tiere — Lösung`). Passed to the core solution renderer as
+    // plain data — core owns no German UI literal.
+    solutionSuffix: ' — Lösung',
+    // Download filenames. The stem is the sanitized puzzle title (or `fallback`
+    // when empty); the two files carry the puzzle / solution suffixes + `.pdf`.
+    filename: {
+      fallback: 'wortsuche',
+      puzzleSuffix: '-raetsel',
+      solutionSuffix: '-loesung',
+      extension: '.pdf',
+    },
+  },
 } as const;
 
 // Shape of the string table, so future locales (if ever added) stay in sync and
