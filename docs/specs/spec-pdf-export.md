@@ -216,3 +216,22 @@ machine check covers are verified at the human milestone-QA gate.
   `paginate(size, copies)` → `{ puzzlesPerPage, pageCount, pages[] }`, the partial
   last page carrying its blocks in the leading slots (no clipping). Deterministic
   in `(size, copies)`; unit-tested for every tier boundary + a partial page.
+- 2026-07-21 (issue #39 — puzzle PDF renderer): added `src/core/pdf/renderPuzzle.ts`
+  (jsPDF, no DOM, no download). `renderPuzzleDoc(result, view)` builds a
+  `jsPDF({unit:'mm',format:'a4'})`, embeds the selected font via `registerFont`
+  (#37), paginates `view.copies` (default 1) copies of the square grid via
+  `paginate` (#38), and draws each packed block. A reusable
+  `renderPuzzleBlock(doc, {layout, grid, header, words, fontName, fontSizePt,
+  highlight?})` helper draws the per-block header (title + `theme · date`), the
+  cell lattice + centred letters, and the wrapped word-list-to-find — the seam the
+  solution renderer (#40) reuses by passing its `highlight` set of `PlacedWord`s
+  (a rounded amber stroke through each word's cells, drawn beneath the letters).
+  The `view` carries `{ header{title,theme,date}, fontFamily, fontSize, copies? }`
+  (mirrors the editor view-model); the words-to-find are the placed words
+  (`result.placed`), never the unplaceable ones. Grid glyphs auto-fit the cell
+  pitch (`GLYPH_FILL` × pitch) for print legibility while header/word-list text
+  honors the selected size (clamped to its strip). Vitest asserts a usable doc
+  across tiers (10→4-up, 15→2-up, 18→1-up), page count matches `paginate`, ä/ö/ü/ß
+  words render without throwing under the embedded font, and `output('arraybuffer')`
+  yields non-empty bytes starting with `%PDF`. Renderer barrel + `src/core` barrel
+  re-export it. Download stays for #41.

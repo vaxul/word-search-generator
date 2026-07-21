@@ -47,5 +47,14 @@ export {
   pdfFontForFamily,
   registerFont,
   registerFontAsset,
+  renderPuzzleDoc,
+  renderPuzzleBlock,
 } from './pdf';
-export type { PdfFontAsset, PdfFontFamily, PdfFontId } from './pdf';
+export type {
+  PdfFontAsset,
+  PdfFontFamily,
+  PdfFontId,
+  PdfPuzzleHeader,
+  PuzzleView,
+  PuzzleBlockRender,
+} from './pdf';
