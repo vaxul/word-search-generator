@@ -225,3 +225,19 @@ covers are checked at the human milestone-QA gate).
   is independent of the parallel app-shell work (#6). `verify` =
   `tsc --noEmit && eslint . && vitest run`; measured ~2-3 s on a clean checkout
   (recorded in `docs/workflow.md`).
+- 2026-07-21 (#6 — src/ skeleton + strings + app shell): the `core/` and
+  `features/` layers ship as **top-level placeholder modules** (`index.ts` with
+  an explanatory comment + `export {}`), not the full `model/grid/pdf` and
+  `editor/preview/export` sub-tree from `docs/architecture.md`. The sub-modules
+  are created by the phase that fills them with logic (Phase 2+); committing
+  empty sub-dirs now would be inert noise (git tracks no empty dirs anyway).
+- 2026-07-21 (#6): the strings module is `src/strings/de.ts` (a `const de`
+  object, `as const`, with a derived `Strings` type) re-exported from
+  `src/strings/index.ts` as `strings` (the active locale). Components import
+  `{ strings }` and read typed keys (`strings.app.title`); no German literal
+  appears in `src/app/` or `src/features/`. Only the shell's title + tagline are
+  populated in Phase 1 (spec: "only the handful of strings the shell needs").
+- 2026-07-21 (#6): `src/app/App.tsx` (named `App` export) replaces the inline
+  JSX previously living in `src/main.tsx`; `main.tsx` now only mounts `<App/>`.
+  All styling stays token-derived Tailwind utilities (`bg-background`,
+  `text-primary`, `text-secondary`, `font-sans`, the 4px spacing scale).
