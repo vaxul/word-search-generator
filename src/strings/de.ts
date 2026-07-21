@@ -19,6 +19,8 @@ export const de = {
   editor: {
     heading: 'Puzzle erstellen',
     regionLabel: 'Puzzle-Editor',
+    // Primary action (amber accent, dark label for WCAG AA) — runs generation.
+    generate: 'Puzzle generieren',
     // Word-list textarea (one word per line, paste-friendly).
     words: {
       label: 'Wörter (eines pro Zeile)',
