@@ -215,3 +215,12 @@ human milestone-QA gate.
   are feature/app view-model state — never fields on the core `PuzzleConfig`
   (`{width,height,directions,reverse,words}`); the manual direction/reverse path
   builds the config directly, bypassing `configFromDifficulty`.
+- 2026-07-21 (issue #30, foundation shell): the app store is a `useReducer` in
+  `src/app/state.ts` (`AppState` = words + `ConfigInputs` view-model + header +
+  `FontSettings` + `GenerationResult | null`) exposed via a `useAppStore` hook;
+  the full `AppAction` set (incl. preset-seeding `selectDifficulty` and
+  `clampGridSize`-bound `setSize`) lands and is unit-tested now, but the shell
+  only reads `state` — the editor/generate/solution issues (#31–#35) import
+  `dispatch`. The two-card layout renders as `src/app` shell + `Card`/`AppHeader`
+  hosting placeholder `EditorPanel`/`PreviewPanel` feature seams; card content is
+  deferred to the later Phase 3 issues.
