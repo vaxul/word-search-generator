@@ -260,6 +260,21 @@ human milestone-QA gate.
   title input value directly, since the header only renders once a puzzle exists
   (mockup). New German strings (`preview.gridLabel`, `wordsToFind`,
   `unplaceable.*`, separators) live in `src/strings/`.
+- 2026-07-21 (issue #35, solution toggle): the preview card gains a
+  Puzzle/Lösung segmented `SolutionToggle` (a labelled `role="group"` of two
+  `aria-pressed` buttons, active segment `primary`-on-`background`) driven by
+  **local `useState` in `PreviewPanel`** — the view is a preview concern, not
+  puzzle data, so no store flag is added. In the Lösung view the placed words
+  are highlighted with the `accent` fill; `PreviewGrid` gained an optional
+  `highlighted?: ReadonlySet<number>` prop and paints matching row-major cells
+  `bg-accent` over the existing dark `foreground` glyph (contrast 6.83:1, WCAG
+  2.1 AA). The highlighted indices come from the pure `solutionCells.ts` helper,
+  which replays each `PlacedWord` from its `start` along the engine's
+  `DIRECTION_VECTORS[direction]` step (`row*width+col`, `Set`-deduped) — reverse
+  needs no special case because placement already stores it as the opposite
+  compass direction. Static answer-key only: grid cells stay non-interactive
+  `<div>`s (no solving/marking — vision non-goal). New German strings under
+  `preview.view` (`groupLabel`/`puzzle`/`solution`).
 - 2026-07-21 (issue #31, accessible fonts): Atkinson Hyperlegible + OpenDyslexic
   (both SIL OFL 1.1) are **vendored as committed build assets** in
   `src/assets/fonts/` (latin subset, weights 400/700, woff2), each with its

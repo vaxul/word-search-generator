@@ -5,7 +5,7 @@
 //         it, the placed words appear as "Zu finden" chips, and un-placeable
 //         words surface in a destructive-styled warning listing exactly them.
 import { describe, expect, it } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { PreviewPanel } from './PreviewPanel';
 import type { FontSettings, PuzzleHeader } from '../../app/state';
 import type { GenerationResult } from '../../core';
@@ -135,5 +135,73 @@ describe('PreviewPanel un-placeable warning (issue #34)', () => {
       <PreviewPanel result={RESULT} header={EMPTY_HEADER} font={DEFAULT_FONT} />,
     );
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+});
+
+// A 3×2 grid where only cells 0,1 (the placed word "HI") belong to a solution;
+// cells 2..5 are filler, so the highlight can be asserted both on and off.
+const PARTIAL: GenerationResult = {
+  grid: { width: 3, height: 2, cells: ['H', 'I', 'X', 'Y', 'Z', 'Q'] },
+  placed: [{ word: 'HI', start: { row: 0, col: 0 }, direction: 'E' }],
+  unplaceable: [],
+};
+
+function solutionButton(): HTMLElement {
+  return screen.getByRole('button', { name: strings.preview.view.solution });
+}
+function puzzleButton(): HTMLElement {
+  return screen.getByRole('button', { name: strings.preview.view.puzzle });
+}
+function renderPartial(): void {
+  render(
+    <PreviewPanel result={PARTIAL} header={EMPTY_HEADER} font={DEFAULT_FONT} />,
+  );
+}
+function hasAnyHighlight(): boolean {
+  return screen
+    .getAllByRole('gridcell')
+    .some((cell) => cell.className.includes('bg-accent'));
+}
+
+describe('PreviewPanel solution toggle (issue #35)', () => {
+  it('defaults to the plain puzzle view with no highlighted cells', () => {
+    renderPartial();
+    expect(hasAnyHighlight()).toBe(false);
+    expect(puzzleButton()).toHaveAttribute('aria-pressed', 'true');
+    expect(solutionButton()).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('highlights exactly the placed-word cells with accent in the solution view', () => {
+    renderPartial();
+    fireEvent.click(solutionButton());
+    const cells = screen.getAllByRole('gridcell');
+    // "HI" occupies cells 0 and 1; the filler cells stay un-highlighted.
+    expect(cells[0]).toHaveClass('bg-accent');
+    expect(cells[1]).toHaveClass('bg-accent');
+    expect(cells[2]).not.toHaveClass('bg-accent');
+    expect(cells[5]).not.toHaveClass('bg-accent');
+    expect(solutionButton()).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('returns to the plain puzzle view when toggled back', () => {
+    renderPartial();
+    fireEvent.click(solutionButton());
+    expect(screen.getAllByRole('gridcell')[0]).toHaveClass('bg-accent');
+    fireEvent.click(puzzleButton());
+    expect(hasAnyHighlight()).toBe(false);
+  });
+});
+
+describe('PreviewPanel solution view is static (issue #35)', () => {
+  it('keeps grid cells non-interactive in the solution view', () => {
+    renderPartial();
+    fireEvent.click(solutionButton());
+    // No cell is a button/checkbox: the solution view is a print preview, not a
+    // solving game (spec Prior decision: static highlight, no marking).
+    for (const cell of screen.getAllByRole('gridcell')) {
+      expect(cell.tagName).toBe('DIV');
+      expect(cell).not.toHaveAttribute('onclick');
+    }
+    expect(within(screen.getByRole('grid')).queryByRole('button')).toBeNull();
   });
 });
