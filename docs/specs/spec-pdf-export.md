@@ -23,10 +23,10 @@ What is true when this work is done:
 - [ ] German umlauts (ä/ö/ü) and ß render correctly in the PDF via an embedded
       Unicode font — never mojibake or a substituted glyph.
 - [ ] `src/features/export/` triggers PDF generation from the current
-      `GenerationResult` + view-model (header, font) and downloads the file(s) in
-      the browser; the export action lives with the editor.
+      `GenerationResult` + view-model (header, font choice + size) and downloads
+      the file(s) in the browser; the export action lives with the editor.
 - [ ] Multiple puzzles per A4 page keyed to grid size, cleanly laid out with no
-      clipping (see OPEN — MVP scope + mapping).
+      clipping (mandated; see OPEN — the size→count mapping + per-block layout).
 - [ ] `src/core/pdf/` is deterministic layout math with unit tests; the app makes
       no runtime network calls; `npm run verify` passes.
 
@@ -43,8 +43,12 @@ What is true when this work is done:
   output from the puzzle (OPEN: separate file vs separate pages).
 - **Multiple-per-page packing** keyed to grid size (OPEN: whether the MVP ships
   multi-up and the exact size→count mapping).
-- **Embedded Unicode font** so ä/ö/ü/ß render — the selected puzzle font (Inter
-  or the Phase 3 accessible font) embedded as a TTF into the document.
+- **Embedded Unicode font** so ä/ö/ü/ß render — the selected puzzle font embedded
+  as a TTF into the document. Every selectable font must have a **vendored OFL TTF
+  build asset to embed**, including the default: Phase 3 vendored only Atkinson
+  Hyperlegible + OpenDyslexic, so this phase also vendors the default font's TTF
+  (Inter, SIL OFL) rather than relying on the CSS `system-ui` fallback that has no
+  embeddable file.
 - **`src/features/export/`** — the download trigger (jsPDF `Blob` → object-URL
   anchor), wired to the editor's export action and the current puzzle state.
 - German UI strings for the export controls in `src/strings/`.
@@ -73,7 +77,8 @@ Per `docs/constitution.md`, `docs/architecture.md`, `docs/prior-art.md`
 - No `any` in `src/core/`; explicit public types; named exports; max function 50
   lines / file 300 lines.
 - Depends on Phase 3 (milestone #3): consumes the `GenerationResult` and the
-  header/font view-model the editor produces.
+  editor's view-model — per-puzzle header (title/theme/date) and font choice +
+  size.
 
 ## Prior art
 
@@ -92,9 +97,10 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 
 ## Human prerequisites
 
-- **none.** Pure client-side rendering. The embedded font is the freely-licensed
-  asset vendored in Phase 3 (reused here) — no new secret, provisioning, or
-  account.
+- **none.** Pure client-side rendering. The embedded fonts are freely-licensed
+  (SIL OFL) build assets — the Phase 3 accessible fonts reused here, plus the
+  default font's TTF (Inter) vendored this phase. All are implementer-vendorable;
+  no secret, provisioning, or account.
 
 ## Prior decisions
 
@@ -103,14 +109,17 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 | **jsPDF**, native `a4`, manual coordinates | `docs/constitution.md` stack table mandates jsPDF; prior-art verdict "reuse — precise coordinate control for letter grids". | 2026-07-21 |
 | Fixed **A4 content box ≈180×267 mm inside 15 mm margins**; cell pitch derived from grid size to fit the box | Prior-art jsPDF entry; guarantees no clipping and legible cells across the 5–30 size range. | 2026-07-21 |
 | `src/core/pdf/` is **pure layout + jsPDF render math, no DOM**; `src/features/export/` performs the **download** (Blob → object URL → anchor click) | `docs/architecture.md` boundary: core is UI-free (jsPDF only), the feature layer touches the browser. Keeps layout math unit-testable without a DOM. | 2026-07-21 |
-| **Embed the selected puzzle font as a Unicode TTF** into the document (jsPDF `addFont`) so ä/ö/ü/ß render | jsPDF's built-in fonts are WinAnsi-limited and mangle some glyphs; embedding the already-vendored TTF renders German correctly and matches the on-screen font. pdf-lib stays a documented fallback only if embedding proves insufficient. | 2026-07-21 |
+| **Embed the selected puzzle font as a Unicode TTF** into the document (jsPDF `addFont`) so ä/ö/ü/ß render; **every selectable font — including the default — ships a vendored OFL TTF** to embed | jsPDF's built-in fonts are WinAnsi-limited and mangle some glyphs; embedding a vendored TTF renders German correctly and matches the on-screen font. Phase 3 vendored only the accessible fonts, so the default (Inter, OFL) is vendored here too — the CSS `system-ui` fallback has no embeddable file. pdf-lib stays a documented fallback only if embedding proves insufficient. | 2026-07-21 |
 | Layout math is **deterministic and unit-tested** (coordinates/packing given size + content box); rendering is thin over it | Constitution: core logic ships with unit tests; geometry is testable without producing a real PDF, keeping the QA gate to a visual check of the actual output. | 2026-07-21 |
 | OPEN — **Separate solution delivery**: two separate PDF files (`*-puzzle.pdf` + `*-solution.pdf`), or one PDF with the solution on later pages the user prints separately? | resolved at the spec-acceptance gate | — |
-| OPEN — **Multiple puzzles per A4 page**: does the MVP ship multi-up (copies of the single puzzle keyed to grid size), and if so the exact size→count mapping (e.g. ≤10 → 4-up, ≤17 → 2-up, else 1-up)? Or 1 puzzle per page for the MVP, multi-up deferred? | resolved at the spec-acceptance gate | — |
+| OPEN — **Multiple-per-page mapping**: the exact grid-size→puzzles-per-page rule (e.g. ≤10 → 4-up, ≤17 → 2-up, else 1-up), **and** whether each packed block carries its own header + word-list-to-find (each block is a separable handout). Multiple-per-page **itself is mandated** (`docs/vision.md` success criterion; Phase 4 is terminal) — only the mapping + per-block layout are open, never whether multi-up ships. | resolved at the spec-acceptance gate | — |
 
 `docs/vision.md` lists both "multiple puzzles per page" and "solution sheets
-printable separately" as success criteria but does not pin the file/page model or
-the packing thresholds — hence the two OPEN items, settled at the gate.
+printable separately" as success criteria. Both features are **mandated**; what
+is genuinely open is only the *file/page model* for the separate solution and the
+*size→count mapping* (with per-block layout) for the packing — hence the two OPEN
+items, settled at the gate. Deferring either feature is not an option (Phase 4 is
+the terminal phase).
 
 ## Tracking
 
@@ -170,3 +179,8 @@ machine check covers are verified at the human milestone-QA gate.
 
 - 2026-07-21: Phase split from `docs/roadmap.md`; Phase 4 owns `src/core/pdf/` +
   `src/features/export/` — the A4 render + download, consuming Phases 2 & 3.
+- 2026-07-21 (spec review): multiple-per-page is a **mandated** vision success
+  criterion, not deferrable (Phase 4 is terminal); OPEN #2 narrowed to the
+  size→count mapping + per-block layout only. Default font (Inter) TTF is vendored
+  this phase for embedding (Phase 3 vendored only the accessible fonts). Consumed
+  view-model listed as header + font choice + size.
