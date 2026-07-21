@@ -16,9 +16,15 @@ export type {
 // Grid primitives (issue #10): seeded PRNG, direction vectors + reverse, and
 // German-aware normalization.
 export {
+  clampGridSize,
+  configFromDifficulty,
+  DIFFICULTY_PRESETS,
   DIRECTIONS,
   DIRECTION_VECTORS,
   EMPTY_CELL,
+  generate,
+  GRID_SIZE_MAX,
+  GRID_SIZE_MIN,
   mulberry32,
   normalizeWord,
   oppositeDirection,
@@ -26,4 +32,9 @@ export {
   reverseVector,
   seedFromString,
 } from './grid';
-export type { DirectionVector, PlacementResult, RandomFn } from './grid';
+export type {
+  DifficultyPreset,
+  DirectionVector,
+  PlacementResult,
+  RandomFn,
+} from './grid';

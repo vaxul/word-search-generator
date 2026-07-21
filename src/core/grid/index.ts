@@ -14,3 +14,12 @@ export { normalizeWord } from './normalize';
 export { EMPTY_CELL, placeWords } from './placement';
 export type { PlacementResult } from './placement';
 export { computeFillAlphabet, fillGrid } from './fill';
+export {
+  clampGridSize,
+  configFromDifficulty,
+  DIFFICULTY_PRESETS,
+  GRID_SIZE_MAX,
+  GRID_SIZE_MIN,
+} from './presets';
+export type { DifficultyPreset } from './presets';
+export { generate } from './generate';
