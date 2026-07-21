@@ -13,7 +13,7 @@
 |---|---|---|---|
 | 1 | Project scaffold & deploy | [spec](specs/archive/spec-scaffold.md) | [#1](https://github.com/vaxul/word-search-generator/milestone/1) |
 | 2 | Grid generation engine | [spec](specs/archive/spec-grid-engine.md) | [#2](https://github.com/vaxul/word-search-generator/milestone/2) |
-| 3 | Editor & preview UI | [spec](specs/spec-editor-preview.md) | [#3](https://github.com/vaxul/word-search-generator/milestone/3) |
+| 3 | Editor & preview UI | [spec](specs/archive/spec-editor-preview.md) | [#3](https://github.com/vaxul/word-search-generator/milestone/3) |
 | 4 | A4 PDF export | [spec](specs/spec-pdf-export.md) | [#4](https://github.com/vaxul/word-search-generator/milestone/4) |
 
 A phase gets a Spec link once `/plan` drafts it, and a Milestone link once the
