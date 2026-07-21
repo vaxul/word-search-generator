@@ -12,3 +12,16 @@ export type {
   PlacedWord,
   PuzzleConfig,
 } from './model';
+
+// Grid primitives (issue #10): seeded PRNG, direction vectors + reverse, and
+// German-aware normalization.
+export {
+  DIRECTIONS,
+  DIRECTION_VECTORS,
+  mulberry32,
+  normalizeWord,
+  oppositeDirection,
+  reverseVector,
+  seedFromString,
+} from './grid';
+export type { DirectionVector, RandomFn } from './grid';
