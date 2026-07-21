@@ -177,6 +177,27 @@ this phase, so the QA gate is code-level rather than a `UI check`).
 
 ## Decision log
 
+- 2026-07-21 (#13, presets + generate): authored `src/core/grid/presets.ts` +
+  `src/core/grid/generate.ts` — the difficulty presets and the single public
+  `generate(config, seed): GenerationResult` entry point, re-exported from
+  `src/core/index.ts`. Decisions: (a) **Presets as DATA, not logic** — a single
+  `DIFFICULTY_PRESETS: Record<Difficulty, DifficultyPreset>` table holds the
+  gate-resolved mapping (Easy 12×12 E,S no-reverse; Medium 15×15 E,S,SE,NE
+  no-reverse; Hard 18×18 all-8 +reverse); no `if`/`switch` on difficulty.
+  `configFromDifficulty(difficulty, words, sizeOverride?)` folds a preset plus a
+  per-run word list into a `PuzzleConfig`, keeping the seed out of the config
+  (generate-time parameter, per model #9 / the seed-not-user-exposed decision).
+  (b) **Size-bound handling = CLAMP, not throw** — `clampGridSize` truncates and
+  clamps any dimension into the inclusive 5–30 bound (non-finite → the minimum),
+  applied both in the optional size override and unconditionally inside
+  `generate`. Chosen over reject-as-error so the engine stays **total** (never
+  throws), consistent with the placement engine's no-throw philosophy; a word
+  longer than the (clamped) grid still flows to `unplaceable`, never a crash or
+  silent drop. (c) **`generate` reuses the primitives verbatim** — it clamps the
+  config, builds ONE seeded `mulberry32(seed)` and threads it through
+  `placeWords` (which normalizes words) then `fillGrid`, so the same
+  `(config, seed)` yields a byte-identical `GenerationResult`; no `Math.random`,
+  no reimplemented placement/fill/normalization.
 - 2026-07-21 (#12, random fill): authored `src/core/grid/fill.ts` — assembles
   the finished `Grid` by replacing every `EMPTY_CELL` of a `PlacementResult`
   with a PRNG-drawn letter. Interface `fillGrid(placement: PlacementResult,
