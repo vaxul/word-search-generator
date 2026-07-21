@@ -17,16 +17,17 @@ What is true when this work is done:
       inside the page margins) and renders the puzzle via **jsPDF** — grid, the
       per-puzzle header (title / theme / date), and the word-list-to-find — with
       no clipping at the page edges. No DOM APIs in `src/core/pdf/`.
-- [ ] A **genuinely separate solution** is produced (see OPEN — file vs pages):
-      the grid with the placed words marked plus the word list, distinct from the
-      puzzle sheet so it can be printed separately (`docs/vision.md`).
+- [ ] A **genuinely separate solution** is produced as its **own PDF file**
+      (`<name>-loesung.pdf`, distinct from `<name>-raetsel.pdf`): the grid with the
+      placed words marked plus the word list, printable separately (`docs/vision.md`).
 - [ ] German umlauts (ä/ö/ü) and ß render correctly in the PDF via an embedded
       Unicode font — never mojibake or a substituted glyph.
 - [ ] `src/features/export/` triggers PDF generation from the current
       `GenerationResult` + view-model (header, font choice + size) and downloads
       the file(s) in the browser; the export action lives with the editor.
-- [ ] Multiple puzzles per A4 page keyed to grid size, cleanly laid out with no
-      clipping (mandated; see OPEN — the size→count mapping + per-block layout).
+- [ ] Multiple puzzles per A4 page keyed to grid size (≤10 → 4-up, 11–17 → 2-up,
+      ≥18 → 1-up), each block with its own header + word list, cleanly laid out
+      with no clipping.
 - [ ] `src/core/pdf/` is deterministic layout math with unit tests; the app makes
       no runtime network calls; `npm run verify` passes.
 
@@ -39,10 +40,10 @@ What is true when this work is done:
   rendering of a puzzle block: the letter grid, the header, and the
   word-list-to-find.
 - **Separate solution rendering** — the same grid with placed words marked
-  (highlight / ring / bold per the design) plus the answer list, as a distinct
-  output from the puzzle (OPEN: separate file vs separate pages).
-- **Multiple-per-page packing** keyed to grid size (OPEN: whether the MVP ships
-  multi-up and the exact size→count mapping).
+  (highlight / ring / bold per the design) plus the answer list, as its **own PDF
+  file** distinct from the puzzle.
+- **Multiple-per-page packing** keyed to grid size: **≤10 → 4-up, 11–17 → 2-up,
+  ≥18 → 1-up**, each block carrying its own header + word list.
 - **Embedded Unicode font** so ä/ö/ü/ß render — the selected puzzle font embedded
   as a TTF into the document. Every selectable font must have a **vendored OFL TTF
   build asset to embed**, including the default: Phase 3 vendored only Atkinson
@@ -111,15 +112,15 @@ From `docs/prior-art.md`, indexed by concern for this phase:
 | `src/core/pdf/` is **pure layout + jsPDF render math, no DOM**; `src/features/export/` performs the **download** (Blob → object URL → anchor click) | `docs/architecture.md` boundary: core is UI-free (jsPDF only), the feature layer touches the browser. Keeps layout math unit-testable without a DOM. | 2026-07-21 |
 | **Embed the selected puzzle font as a Unicode TTF** into the document (jsPDF `addFont`) so ä/ö/ü/ß render; **every selectable font — including the default — ships a vendored OFL TTF** to embed | jsPDF's built-in fonts are WinAnsi-limited and mangle some glyphs; embedding a vendored TTF renders German correctly and matches the on-screen font. Phase 3 vendored only the accessible fonts, so the default (Inter, OFL) is vendored here too — the CSS `system-ui` fallback has no embeddable file. pdf-lib stays a documented fallback only if embedding proves insufficient. | 2026-07-21 |
 | Layout math is **deterministic and unit-tested** (coordinates/packing given size + content box); rendering is thin over it | Constitution: core logic ships with unit tests; geometry is testable without producing a real PDF, keeping the QA gate to a visual check of the actual output. | 2026-07-21 |
-| OPEN — **Separate solution delivery**: two separate PDF files (`*-puzzle.pdf` + `*-solution.pdf`), or one PDF with the solution on later pages the user prints separately? | resolved at the spec-acceptance gate | — |
-| OPEN — **Multiple-per-page mapping**: the exact grid-size→puzzles-per-page rule (e.g. ≤10 → 4-up, ≤17 → 2-up, else 1-up), **and** whether each packed block carries its own header + word-list-to-find (each block is a separable handout). Multiple-per-page **itself is mandated** (`docs/vision.md` success criterion; Phase 4 is terminal) — only the mapping + per-block layout are open, never whether multi-up ships. | resolved at the spec-acceptance gate | — |
+| **Separate solution = two separate PDF files** (`<name>-raetsel.pdf` + `<name>-loesung.pdf`), each downloaded independently | Resolved at the spec-acceptance gate (2026-07-21). Cleanest "genuinely separate" per `docs/vision.md` — each sheet prints independently with no page-range selection. | 2026-07-21 |
+| **Multiple-per-page mapping = ≤10 → 4-up, 11–17 → 2-up, ≥18 → 1-up**; each packed block carries its own header + word-list-to-find (separable handout) | Resolved at the spec-acceptance gate (2026-07-21). Three tiers per the layout diagram: best paper economy for small puzzles while keeping large grids legible; per-block header/word-list so each copy is independently usable. Multiple-per-page itself is mandated (vision success criterion; terminal phase). | 2026-07-21 |
 
-`docs/vision.md` lists both "multiple puzzles per page" and "solution sheets
-printable separately" as success criteria. Both features are **mandated**; what
-is genuinely open is only the *file/page model* for the separate solution and the
-*size→count mapping* (with per-block layout) for the packing — hence the two OPEN
-items, settled at the gate. Deferring either feature is not an option (Phase 4 is
-the terminal phase).
+Both decisions were resolved at the spec-acceptance gate (2026-07-21): the
+separate solution ships as **two PDF files** (`-raetsel` / `-loesung`), and
+packing is **≤10 → 4-up, 11–17 → 2-up, ≥18 → 1-up** with each block carrying its
+own header + word-list-to-find. Both underlying features are mandated by
+`docs/vision.md` (Phase 4 is terminal); only these models were open, and they are
+now settled — see the Prior decisions rows above and the Decision log.
 
 ## Tracking
 
@@ -179,6 +180,9 @@ machine check covers are verified at the human milestone-QA gate.
 
 - 2026-07-21: Phase split from `docs/roadmap.md`; Phase 4 owns `src/core/pdf/` +
   `src/features/export/` — the A4 render + download, consuming Phases 2 & 3.
+- 2026-07-21 (spec-acceptance gate): separate solution ships as **two PDF files**
+  (`-raetsel` / `-loesung`); packing mapping resolved to **≤10 → 4-up,
+  11–17 → 2-up, ≥18 → 1-up** with each block carrying its own header + word list.
 - 2026-07-21 (spec review): multiple-per-page is a **mandated** vision success
   criterion, not deferrable (Phase 4 is terminal); OPEN #2 narrowed to the
   size→count mapping + per-block layout only. Default font (Inter) TTF is vendored
