@@ -188,3 +188,17 @@ machine check covers are verified at the human milestone-QA gate.
   size→count mapping + per-block layout only. Default font (Inter) TTF is vendored
   this phase for embedding (Phase 3 vendored only the accessible fonts). Consumed
   view-model listed as header + font choice + size.
+- 2026-07-21 (issue #37 — PDF font assets + embedding utility): added `jspdf`
+  (pinned `4.2.1`) as a runtime dependency. Vendored three OFL TrueType (glyf)
+  fonts as **base64 TS modules** under `src/core/pdf/fonts/` — Inter (default),
+  Atkinson Hyperlegible, OpenDyslexic — each with its SIL OFL 1.1 notice. Base64
+  (not raw `.ttf` + Vite `?url`) keeps `src/core/pdf` DOM-free and unit-testable
+  in Node. Inter + Atkinson decompressed from the Phase 3 `@fontsource` woff2
+  subsets (screen/PDF glyph parity); OpenDyslexic taken from the upstream
+  `antijingoist/open-dyslexic` `ttf/` build because the `@fontsource` woff2
+  decompresses to CFF/OTTO which jsPDF cannot embed. `registerFont(doc, family)`
+  (+ lower-level `registerFontAsset`) runs `addFileToVFS`/`addFont`/`setFont`;
+  `'sans'` → Inter, `'accessible'` → Atkinson Hyperlegible (first in the
+  `--font-accessible` stack), OpenDyslexic available via `PDF_FONTS`. A Vitest
+  spec embeds each font and asserts ä/ö/ü/ß render (positive `ß` glyph width, no
+  throw). Layout math + renderers remain for #38–#41.
