@@ -177,6 +177,24 @@ this phase, so the QA gate is code-level rather than a `UI check`).
 
 ## Decision log
 
+- 2026-07-21 (#12, random fill): authored `src/core/grid/fill.ts` — assembles
+  the finished `Grid` by replacing every `EMPTY_CELL` of a `PlacementResult`
+  with a PRNG-drawn letter. Interface `fillGrid(placement: PlacementResult,
+  random: RandomFn): Grid` (plus exported `computeFillAlphabet(cells)`), chosen
+  to consume `placeWords`'s output directly and compose with the future
+  `generate()` (#13). Decisions: (a) **Fill-alphabet derivation** — the 26 base
+  letters A–Z (in the engine's UPPERCASE normalized form) are always present;
+  the diacritics Ä/Ö/Ü/ß are added ONLY when that exact glyph already appears
+  among the placed cells (scanned via a `Set` of `cells`). This satisfies the
+  gate-resolved "full German alphabet plus any ä/ö/ü/ß present" rule: a diacritic
+  a word placed also appears in the fill (so it never marks a word cell), and a
+  diacritic no word used is never introduced. (b) **Case handling** — fill draws
+  from the same normalized forms `normalizeWord` emits (A–Z and Ä/Ö/Ü uppercase,
+  eszett as the single-cell lowercase `ß`), so fill letters are indistinguishable
+  from placed letters; ß stays one cell (never "SS"). (c) **Determinism** — the
+  single random draw per empty cell flows through the injected seeded PRNG
+  (mulberry32); no `Math.random`. Same `(placement, seed)` → byte-identical
+  filled grid; placed letters are copied through, never overwritten.
 - 2026-07-21 (#11, placement engine): authored `src/core/grid/placement.ts` —
   deterministic word placement into the grid-as-1D-array, producing the PLACED
   grid (`cells` = one glyph per occupied cell, `EMPTY_CELL` `''` elsewhere; the
