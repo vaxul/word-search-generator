@@ -1,43 +1,51 @@
 import { fontFamilyClass } from '../../app/fontClass';
-import type { FontFamily } from '../../app/state';
+import type { FontSettings, PuzzleHeader } from '../../app/state';
+import type { GenerationResult } from '../../core';
 import { strings } from '../../strings';
+import { PreviewGrid } from './PreviewGrid';
+import { PreviewHeader } from './PreviewHeader';
+import { UnplaceableWarning } from './UnplaceableWarning';
+import { WordsToFind } from './WordsToFind';
 
 interface PreviewPanelProps {
-  /** The per-puzzle title from the store header; shown once a puzzle exists. */
-  readonly title: string;
-  /** Whether a generation result exists — drives the empty state for now. */
-  readonly hasResult: boolean;
-  /**
-   * The selected font family (store view-model). The preview honors the chosen
-   * accessible / default font (docs/design.md: the preview grid honors the
-   * selected accessible font); applied via the token-derived utility (#31).
-   */
-  readonly fontFamily: FontFamily;
+  /** The latest generation result, or `null` before the first generation. */
+  readonly result: GenerationResult | null;
+  /** The per-puzzle header (title / theme / date) shown above the grid. */
+  readonly header: PuzzleHeader;
+  /** The selected font family + size — honored by the whole preview. */
+  readonly font: FontSettings;
 }
 
 /**
- * Preview panel — the right card's content region. Phase 3 FOUNDATION seam
- * (issue #30): renders the heading, the puzzle title once present, and an empty
- * state. The generated grid, word-list-to-find, un-placeable warning, and the
- * "Lösung" toggle land in later Phase 3 issues (#34, #35). UI text comes from
- * src/strings/. The content region applies the selected font via the
- * token-derived `fontFamilyClass` (issue #31 wiring).
+ * Preview panel — the right card's content region (issue #34). Renders the
+ * per-puzzle header, the fixed-pitch letter grid, the "Zu finden" word chips, and
+ * a destructive un-placeable warning for the current {@link GenerationResult};
+ * before any generation it keeps the empty state. The content region applies the
+ * selected accessible font via the token-derived `fontFamilyClass` (issue #31),
+ * and the chosen size flows into the grid. The plain puzzle view only — the
+ * "Lösung" highlight toggle is issue #35, which slots in beside the grid.
  */
 export function PreviewPanel({
-  title,
-  hasResult,
-  fontFamily,
+  result,
+  header,
+  font,
 }: PreviewPanelProps): JSX.Element {
   return (
-    <div className={fontFamilyClass(fontFamily)}>
+    <div className={fontFamilyClass(font.family)}>
       <h2 className="text-lg font-semibold text-foreground">
         {strings.preview.heading}
       </h2>
-      {title ? (
-        <p className="mt-4 text-xl font-bold text-foreground">{title}</p>
-      ) : null}
-      {hasResult ? null : (
+      {result === null ? (
         <p className="mt-4 text-sm text-secondary">{strings.preview.empty}</p>
+      ) : (
+        <>
+          <PreviewHeader header={header} />
+          <UnplaceableWarning unplaceable={result.unplaceable} />
+          <div className="mt-4 overflow-auto">
+            <PreviewGrid grid={result.grid} fontSize={font.size} />
+          </div>
+          <WordsToFind placed={result.placed} />
+        </>
       )}
     </div>
   );

@@ -80,12 +80,25 @@ export const de = {
       sizeUnit: 'px',
     },
   },
-  // Preview card (right column). The grid rendering + solution toggle arrive in
-  // later Phase 3 issues; the shell owns the heading + the empty state.
+  // Preview card (right column). The grid render + words-to-find + un-placeable
+  // warning land in issue #34; the solution toggle in #35. The shell owns the
+  // heading + the empty state.
   preview: {
     heading: 'Vorschau',
     regionLabel: 'Puzzle-Vorschau',
     empty: 'Noch kein Puzzle generiert — erstelle links dein Puzzle.',
+    // Accessible name for the letter grid (screen readers).
+    gridLabel: 'Buchstabengitter',
+    // Separator joining theme + date in the header meta line (mockup).
+    metaSeparator: ' · ',
+    // "Zu finden" section heading above the word chips (styled uppercase).
+    wordsToFind: 'Zu finden',
+    // Destructive un-placeable warning: label + the exact words that did not fit,
+    // joined by the list separator.
+    unplaceable: {
+      label: 'Nicht platzierbar:',
+      separator: ', ',
+    },
   },
 } as const;
 

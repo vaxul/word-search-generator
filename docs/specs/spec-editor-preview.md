@@ -242,6 +242,24 @@ human milestone-QA gate.
   the extent of #33 — the preview grid render (#34) and solution toggle (#35) stay
   out of scope; until #34 the preview shows its empty state, which the component
   test uses as the observable proxy for "a result is in state".
+- 2026-07-21 (issue #34, preview render): the preview card renders the plain
+  PUZZLE view of the store `GenerationResult` — a `PreviewHeader` (title +
+  `secondary` "theme · date" meta), a `PreviewGrid` (fixed-pitch CSS-grid letter
+  cells, `foreground`-on-`background` for WCAG 2.1 AA, `border` between cells,
+  reading `grid.cells[row*width+col]`), a `WordsToFind` chip list of the PLACED
+  words, and an `UnplaceableWarning` (`destructive`-styled `role="alert"` listing
+  exactly `result.unplaceable`). Font family is applied via `fontFamilyClass`
+  (#31) on the content root; the chosen font size flows into the grid as the
+  glyph size and drives a proportional square cell pitch (ratio 1.9), so large
+  grids (up to 30×30) keep a fixed pitch and **scroll** inside an `overflow-auto`
+  container rather than reflowing. `PreviewPanel` props changed from the #30 seam
+  (`title`/`hasResult`/`fontFamily`) to `result`/`header`/`font`; before a result
+  the empty state is unchanged. Two seams left for #35: the plain puzzle view has
+  no solution highlight, and the "Lösung" toggle slots in beside the grid. The
+  #32 editor test that used the preview title as its state proxy now observes the
+  title input value directly, since the header only renders once a puzzle exists
+  (mockup). New German strings (`preview.gridLabel`, `wordsToFind`,
+  `unplaceable.*`, separators) live in `src/strings/`.
 - 2026-07-21 (issue #31, accessible fonts): Atkinson Hyperlegible + OpenDyslexic
   (both SIL OFL 1.1) are **vendored as committed build assets** in
   `src/assets/fonts/` (latin subset, weights 400/700, woff2), each with its
