@@ -50,8 +50,9 @@ truth, milestones and issues are created on GitHub from them.
   secrets). NOTE: `package.json` + lockfile do not exist until Phase 1
   (scaffold) lands, so Bootstrap is only runnable once Phase 1 is merged.
 - Verify: `npm run verify` (TypeScript type-check + ESLint + Vitest)
-  (measured duration: `to be measured after Phase 1 scaffold`)
-- Test: `npm test` (Vitest) — currently `none yet` until Phase 1 defines it;
+  (measured duration: `~2-3 s` on a clean checkout — one smoke test; grows as
+  the suite does)
+- Test: `npm test` (Vitest, `vitest run`) — one smoke test as of Phase 1;
   acceptance items no machine check covers go to the milestone-QA gate.
 - Build: `npm run build` (production static build)
 

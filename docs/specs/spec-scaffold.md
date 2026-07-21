@@ -203,3 +203,25 @@ covers are checked at the human milestone-QA gate).
   values, satisfying the "Tailwind theme references those tokens" requirement
   with a single manually-synced source file (no build-time generator, per the
   existing `tokens.css` decision above).
+- 2026-07-21 (#5 — Vitest + RTL harness): pinned test toolchain (exact
+  versions, matching the scaffold convention) — `vitest@2.1.8`, `jsdom@25.0.1`,
+  `@testing-library/react@16.1.0`, `@testing-library/dom@10.4.0` (RTL 16 peer,
+  installed explicitly), `@testing-library/jest-dom@6.6.3`. Compatible with the
+  installed Vite 6 / React 18.
+- 2026-07-21 (#5): Vitest config lives **in** `vite.config.ts` (imported from
+  `vitest/config`, which re-exports Vite's `defineConfig` with the `test` field
+  typed) rather than a separate `vitest.config.ts` — one config, no duplicated
+  `react()`/`tailwindcss()` plugin wiring to keep in sync. Env `jsdom`; test
+  glob `src/**/*.{test,spec}.{ts,tsx}`.
+- 2026-07-21 (#5): Vitest `globals` left **off** — test files import
+  `describe`/`it`/`expect` from `'vitest'` so TypeScript and ESLint see real
+  bindings, not ambient globals (no eslint test-env override needed, no extra
+  `types` entry in tsconfig). jest-dom matchers registered once in
+  `src/test/setup.ts` via `@testing-library/jest-dom/vitest`, which also
+  augments `expect`'s type; RTL `cleanup()` is called explicitly in an
+  `afterEach` there (auto-cleanup only fires when globals are enabled).
+- 2026-07-21 (#5): smoke test (`src/smoke.test.tsx`) is deliberately
+  self-contained — renders an inline probe component, not the app shell — so it
+  is independent of the parallel app-shell work (#6). `verify` =
+  `tsc --noEmit && eslint . && vitest run`; measured ~2-3 s on a clean checkout
+  (recorded in `docs/workflow.md`).
