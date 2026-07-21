@@ -241,9 +241,12 @@ machine check covers are verified at the human milestone-QA gate.
   `jsPDF({unit:'mm',format:'a4'})`, `registerFont` (#37), the same `paginate`
   packing/per-block layout (#38) — but passes `result.placed` as the
   `renderPuzzleBlock` `highlight` set (#39) so every placed word is MARKED with
-  the accent stroke, and tags each block title with a solution suffix
-  (`SOLUTION_TITLE_SUFFIX = ' — Lösung'`, overridable via the view's optional
-  `solutionSuffix`; bare label when no title). The returned document is a
+  the accent stroke, and tags each block title with a solution suffix. The
+  German "Lösung" label is NOT baked into core (constitution: German UI text
+  lives only in `src/strings/`, never in `src/core`) — the caller passes it as
+  plain data via the required `SolutionView.solutionSuffix`, exactly as the
+  header title/theme/date already flow into the renderer; bare (trimmed) label
+  when no title. The returned document is a
   DISTINCT object from `renderPuzzleDoc`'s (Prior decision: solution is its own
   `-loesung` file), so #41 can download two separate PDFs. The highlighted cells
   are computed inside `renderPuzzleBlock`/`drawHighlight` from each `PlacedWord`

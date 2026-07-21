@@ -50,7 +50,6 @@ export {
   renderPuzzleDoc,
   renderPuzzleBlock,
   renderSolutionDoc,
-  SOLUTION_TITLE_SUFFIX,
 } from './pdf';
 export type {
   PdfFontAsset,

@@ -11,6 +11,11 @@
 // named exports. The highlighted cells are computed inside `renderPuzzleBlock`
 // from each `PlacedWord` (start + `DIRECTION_VECTORS[direction]`), so no cell
 // math is duplicated here and nothing is imported from `src/features`.
+//
+// The German "Lösung" label is NOT owned here: `src/core` holds no user-facing
+// UI text (constitution — German strings live only in `src/strings/`). The
+// caller supplies the suffix as plain data via `SolutionView.solutionSuffix`,
+// exactly as the header title/theme/date already flow into the renderer.
 import { jsPDF } from 'jspdf';
 
 import type { GenerationResult } from '../model';
@@ -19,21 +24,17 @@ import { registerFont } from './registerFont';
 import { renderPuzzleBlock, type PdfPuzzleHeader, type PuzzleView } from './renderPuzzle';
 
 /**
- * German suffix appended to a block title on the solution sheet so it is
- * unmistakably the answer key (e.g. `Tiere` → `Tiere — Lösung`). Kept as a
- * single constant here — `src/core/pdf` is DOM/UI-free, so it takes user text
- * via the view and only owns this fixed formatting token.
+ * The solution view mirrors {@link PuzzleView} plus `solutionSuffix`: the text
+ * tagged onto each block title so the sheet reads as the answer key (e.g.
+ * `Tiere` → `Tiere — Lösung`). Required and supplied by the caller from
+ * `src/strings/` — core owns no German UI literal.
  */
-export const SOLUTION_TITLE_SUFFIX = ' — Lösung';
-
-/** The solution view mirrors {@link PuzzleView}; `solutionSuffix` can override
- * {@link SOLUTION_TITLE_SUFFIX} (falls back to it when omitted). */
 export interface SolutionView extends PuzzleView {
-  readonly solutionSuffix?: string;
+  readonly solutionSuffix: string;
 }
 
 /** Derives the solution block header: the puzzle title tagged with the suffix
- * (or the bare suffix label when no title was entered), theme + date unchanged. */
+ * (or the trimmed suffix label when no title was entered), theme + date kept. */
 function solutionHeader(header: PdfPuzzleHeader, suffix: string): PdfPuzzleHeader {
   const label = header.title.length > 0 ? `${header.title}${suffix}` : suffix.trim();
   return { ...header, title: label };
@@ -53,8 +54,7 @@ export function renderSolutionDoc(result: GenerationResult, view: SolutionView):
   const fontName = registerFont(doc, view.fontFamily);
   const size = result.grid.width;
   const words = result.placed.map((placed) => placed.word);
-  const suffix = view.solutionSuffix ?? SOLUTION_TITLE_SUFFIX;
-  const header = solutionHeader(view.header, suffix);
+  const header = solutionHeader(view.header, view.solutionSuffix);
   const { pages } = paginate(size, view.copies ?? 1);
   pages.forEach((page, pageIndex) => {
     if (pageIndex > 0) doc.addPage();

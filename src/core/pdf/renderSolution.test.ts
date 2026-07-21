@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { GenerationResult, PlacedWord } from '../model';
 import { paginate } from './layout';
 import { renderPuzzleDoc, type PuzzleView } from './renderPuzzle';
-import { SOLUTION_TITLE_SUFFIX, renderSolutionDoc } from './renderSolution';
+import { renderSolutionDoc, type SolutionView } from './renderSolution';
 
 // A letter pool including the German glyphs (ä/ö/ü/ß) so the embedded-font path
 // is exercised, mirroring the puzzle renderer spec.
@@ -21,6 +21,19 @@ const VIEW: PuzzleView = {
   fontSize: 16,
 };
 
+// The solution suffix is supplied as plain data by the caller (from src/strings
+// in the app) — core owns no German literal. Tests pass it explicitly.
+const SOL_VIEW: SolutionView = { ...VIEW, solutionSuffix: ' — Lösung' };
+
+// The block header text the puzzle must use to match the solution 1:1 (title +
+// suffix), isolating the highlight strokes as the only content-stream diff.
+const SUFFIXED_HEADER = {
+  ...SOL_VIEW.header,
+  title: `${SOL_VIEW.header.title}${SOL_VIEW.solutionSuffix}`,
+};
+const bytes = (doc: { output(t: 'arraybuffer'): ArrayBuffer }): number =>
+  doc.output('arraybuffer').byteLength;
+
 const PLACED: readonly PlacedWord[] = [
   { word: 'HUND', start: { row: 1, col: 1 }, direction: 'E' },
   { word: 'KATZE', start: { row: 3, col: 0 }, direction: 'SE' },
@@ -35,13 +48,13 @@ describe('renderSolutionDoc', () => {
   it('returns a jsPDF document distinct from the puzzle document', () => {
     const result = makeResult(12, PLACED);
     const puzzle = renderPuzzleDoc(result, VIEW);
-    const solution = renderSolutionDoc(result, VIEW);
+    const solution = renderSolutionDoc(result, SOL_VIEW);
     expect(solution).not.toBe(puzzle);
     expect(typeof solution.output).toBe('function');
   });
 
   it('emits non-empty PDF bytes beginning with the %PDF magic', () => {
-    const solution = renderSolutionDoc(makeResult(12, PLACED), VIEW);
+    const solution = renderSolutionDoc(makeResult(12, PLACED), SOL_VIEW);
     const buffer = solution.output('arraybuffer');
     expect(buffer.byteLength).toBeGreaterThan(0);
     expect(startsWithPdfMagic(buffer)).toBe(true);
@@ -56,40 +69,49 @@ describe('renderSolutionDoc', () => {
     ];
     for (const [size, copies] of cases) {
       const result = makeResult(size, PLACED);
-      const solution = renderSolutionDoc(result, { ...VIEW, copies });
+      const solution = renderSolutionDoc(result, { ...SOL_VIEW, copies });
       const puzzle = renderPuzzleDoc(result, { ...VIEW, copies });
       expect(solution.getNumberOfPages()).toBe(paginate(size, copies).pageCount);
       expect(solution.getNumberOfPages()).toBe(puzzle.getNumberOfPages());
     }
   });
 
-  it('exercises the highlight path — placed words render marked without throwing', () => {
+  it('marks the placed words — the highlight strokes enlarge the content stream', () => {
     // Placed words drive the highlight set; ä/ö/ü/ß glyphs check the font path.
     const placed: PlacedWord[] = [
       { word: 'MÜLL', start: { row: 0, col: 0 }, direction: 'E' },
       { word: 'FÜSSE', start: { row: 2, col: 4 }, direction: 'SE' },
     ];
     const result = makeResult(14, placed);
-    expect(() =>
-      renderSolutionDoc(result, { ...VIEW, fontFamily: 'accessible' }),
-    ).not.toThrow();
+    const solution = renderSolutionDoc(result, { ...SOL_VIEW, fontFamily: 'accessible' });
+    // A puzzle with the identical header text + word list but NO marks: the only
+    // content difference is the highlight strokes, so the solution is larger.
+    const puzzle = renderPuzzleDoc(result, {
+      ...VIEW,
+      fontFamily: 'accessible',
+      header: SUFFIXED_HEADER,
+    });
+    expect(bytes(solution)).toBeGreaterThan(bytes(puzzle));
   });
 });
 
 describe('renderSolutionDoc — header + edge cases', () => {
-  it('renders with an empty placed set (no marks) without throwing', () => {
-    expect(() => renderSolutionDoc(makeResult(10), VIEW)).not.toThrow();
+  it('draws no highlight when the placed set is empty (matches the plain puzzle)', () => {
+    const result = makeResult(10);
+    const solution = renderSolutionDoc(result, SOL_VIEW);
+    const puzzle = renderPuzzleDoc(result, { ...VIEW, header: SUFFIXED_HEADER });
+    // No placed words → no highlight and no word list: identical to the puzzle.
+    expect(bytes(solution)).toBe(bytes(puzzle));
   });
 
-  it('defaults the solution suffix and honours a supplied override', () => {
-    expect(SOLUTION_TITLE_SUFFIX.length).toBeGreaterThan(0);
+  it('honours the supplied suffix and the empty-title (bare label) path', () => {
     const result = makeResult(10, PLACED);
     expect(() =>
-      renderSolutionDoc(result, { ...VIEW, solutionSuffix: ' (Antworten)' }),
+      renderSolutionDoc(result, { ...SOL_VIEW, solutionSuffix: ' (Antworten)' }),
     ).not.toThrow();
-    // Empty title path: the bare suffix label is used for the block header.
+    // Empty title path: the trimmed suffix label is used for the block header.
     expect(() =>
-      renderSolutionDoc(result, { ...VIEW, header: { title: '', theme: '', date: '' } }),
+      renderSolutionDoc(result, { ...SOL_VIEW, header: { title: '', theme: '', date: '' } }),
     ).not.toThrow();
   });
 });
