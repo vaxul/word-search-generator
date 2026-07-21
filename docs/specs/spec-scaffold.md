@@ -193,3 +193,13 @@ covers are checked at the human milestone-QA gate).
   import in `core`, `any` in `core`, `fetch` in a feature, `default export`,
   German umlaut literal, a 59-line function) that were linted then removed — no
   violation fixtures are committed under `src/`.
+- 2026-07-20 (issue #3): **Tailwind v4** via the first-party `@tailwindcss/vite`
+  plugin (no PostCSS/`tailwind.config.js`). The spec did not pin a Tailwind
+  major; v4 is the current stable and integrates cleanly with the installed
+  Vite 6. The design tokens are declared as Tailwind `@theme` variables in
+  `src/styles/tokens.css` (imported via `src/styles/main.css`), so the tokens
+  *are* the theme — utilities (`bg-primary`, `text-foreground`, `font-sans`,
+  `rounded-md`, the 4px-based spacing scale) resolve to the `docs/design.md`
+  values, satisfying the "Tailwind theme references those tokens" requirement
+  with a single manually-synced source file (no build-time generator, per the
+  existing `tokens.css` decision above).
