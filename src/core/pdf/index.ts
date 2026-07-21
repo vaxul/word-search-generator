@@ -22,3 +22,9 @@ export {
   paginate,
 } from './layout';
 export type { Box, BlockLayout, PageLayout, PaginationResult } from './layout';
+export { renderPuzzleDoc, renderPuzzleBlock } from './renderPuzzle';
+export type {
+  PdfPuzzleHeader,
+  PuzzleView,
+  PuzzleBlockRender,
+} from './renderPuzzle';
