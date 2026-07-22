@@ -67,6 +67,20 @@ export const BLOCK_HEADER_MM = 12;
 export const BLOCK_WORDLIST_MM = 14;
 
 /**
+ * Vertical breathing room between the header strip and the top of the grid, so
+ * the header does not read as glued to the letters in print (QA finding, #54).
+ * The grid region is inset by this below the header before the square is fitted.
+ */
+export const HEADER_GAP_MM = 4;
+
+/**
+ * Vertical breathing room between the bottom of the grid and the word-list strip
+ * (QA finding, #54). The grid region is inset by this above the word list before
+ * the square is fitted, so the words-to-find read as a clearly separate block.
+ */
+export const WORDLIST_GAP_MM = 4;
+
+/**
  * Minimum legible cell pitch (mm). The packing tiers are chosen so that every
  * grid size, placed in its assigned tier, yields a pitch at or above this floor;
  * `paginate` guarantees it and the unit tests assert it across the size range.
@@ -123,19 +137,24 @@ function blockBox(perPage: number, indexInPage: number): Box {
 
 /**
  * Resolves one block box into a {@link BlockLayout} for a `size`×`size` grid:
- * reserves the header and word-list strips, fits the largest square grid into
- * the remaining area, and centres it. The cell pitch fills that square exactly,
- * so the grid never overflows the block (and thus never the content box).
+ * reserves the header and word-list strips plus a {@link HEADER_GAP_MM} /
+ * {@link WORDLIST_GAP_MM} gap on either side of the grid, fits the largest square
+ * grid into the remaining region, and centres it. The gaps guarantee visible
+ * breathing room between the header/word-list and the grid (#54); the cell pitch
+ * fills the square exactly, so the grid never overflows the block (nor the
+ * content box).
  */
 export function blockLayout(size: number, box: Box): BlockLayout {
   assertGridSize(size);
-  const innerHeight = box.height - BLOCK_HEADER_MM - BLOCK_WORDLIST_MM;
-  const side = Math.min(box.width, innerHeight);
+  const regionTop = box.y + BLOCK_HEADER_MM + HEADER_GAP_MM;
+  const regionHeight =
+    box.height - BLOCK_HEADER_MM - BLOCK_WORDLIST_MM - HEADER_GAP_MM - WORDLIST_GAP_MM;
+  const side = Math.min(box.width, regionHeight);
   const cellPitch = side / size;
   const header: Box = { x: box.x, y: box.y, width: box.width, height: BLOCK_HEADER_MM };
   const grid: Box = {
     x: box.x + (box.width - side) / 2,
-    y: box.y + BLOCK_HEADER_MM + (innerHeight - side) / 2,
+    y: regionTop + (regionHeight - side) / 2,
     width: side,
     height: side,
   };
