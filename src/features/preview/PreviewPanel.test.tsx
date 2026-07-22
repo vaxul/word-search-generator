@@ -138,11 +138,20 @@ describe('PreviewPanel un-placeable warning (issue #34)', () => {
   });
 });
 
-// A 3×2 grid where only cells 0,1 (the placed word "HI") belong to a solution;
-// cells 2..5 are filler, so the highlight can be asserted both on and off.
+// A 3×3 grid with TWO overlapping placed words that cross at cell (0,0):
+// "HI" runs east across row 0, "HO" runs south down col 0. Sharing cell 0, they
+// are exactly the densely-placed case issue #56 must keep readable — each word
+// gets its own capsule, not a merged flat fill.
 const PARTIAL: GenerationResult = {
-  grid: { width: 3, height: 2, cells: ['H', 'I', 'X', 'Y', 'Z', 'Q'] },
-  placed: [{ word: 'HI', start: { row: 0, col: 0 }, direction: 'E' }],
+  grid: {
+    width: 3,
+    height: 3,
+    cells: ['H', 'I', 'X', 'O', 'Y', 'Z', 'Q', 'R', 'S'],
+  },
+  placed: [
+    { word: 'HI', start: { row: 0, col: 0 }, direction: 'E' },
+    { word: 'HO', start: { row: 0, col: 0 }, direction: 'S' },
+  ],
   unplaceable: [],
 };
 
@@ -157,51 +166,55 @@ function renderPartial(): void {
     <PreviewPanel result={PARTIAL} header={EMPTY_HEADER} font={DEFAULT_FONT} />,
   );
 }
-function hasAnyHighlight(): boolean {
-  return screen
-    .getAllByRole('gridcell')
-    .some((cell) => cell.className.includes('bg-accent'));
+// The per-word solution capsules are `<line data-solution-mark>` elements in the
+// overlay SVG (issue #56); count them to assert one distinct mark per word.
+function solutionMarkEls(): NodeListOf<Element> {
+  return document.querySelectorAll('[data-solution-mark]');
 }
 
-describe('PreviewPanel solution toggle (issue #35)', () => {
-  it('defaults to the plain puzzle view with no highlighted cells', () => {
+describe('PreviewPanel solution toggle (issue #56)', () => {
+  it('defaults to the plain puzzle view with no solution marks', () => {
     renderPartial();
-    expect(hasAnyHighlight()).toBe(false);
+    expect(solutionMarkEls()).toHaveLength(0);
     expect(puzzleButton()).toHaveAttribute('aria-pressed', 'true');
     expect(solutionButton()).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('highlights exactly the placed-word cells with accent in the solution view', () => {
+  it('draws one distinct capsule per placed word in the solution view', () => {
     renderPartial();
     fireEvent.click(solutionButton());
-    const cells = screen.getAllByRole('gridcell');
-    // "HI" occupies cells 0 and 1; the filler cells stay un-highlighted.
-    expect(cells[0]).toHaveClass('bg-accent');
-    expect(cells[1]).toHaveClass('bg-accent');
-    expect(cells[2]).not.toHaveClass('bg-accent');
-    expect(cells[5]).not.toHaveClass('bg-accent');
+    // Two placed words -> two marks, so the overlapping "HI"/"HO" stay
+    // individually readable rather than blurring into one flat fill.
+    expect(solutionMarkEls()).toHaveLength(2);
     expect(solutionButton()).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('returns to the plain puzzle view when toggled back', () => {
     renderPartial();
     fireEvent.click(solutionButton());
-    expect(screen.getAllByRole('gridcell')[0]).toHaveClass('bg-accent');
+    expect(solutionMarkEls()).toHaveLength(2);
     fireEvent.click(puzzleButton());
-    expect(hasAnyHighlight()).toBe(false);
+    expect(solutionMarkEls()).toHaveLength(0);
   });
 });
 
-describe('PreviewPanel solution view is static (issue #35)', () => {
-  it('keeps grid cells non-interactive in the solution view', () => {
+describe('PreviewPanel solution view is static (issue #56)', () => {
+  it('keeps the grid and its solution overlay non-interactive', () => {
     renderPartial();
     fireEvent.click(solutionButton());
     // No cell is a button/checkbox: the solution view is a print preview, not a
-    // solving game (spec Prior decision: static highlight, no marking).
+    // solving game (spec Prior decision: static marking, no solving).
     for (const cell of screen.getAllByRole('gridcell')) {
       expect(cell.tagName).toBe('DIV');
       expect(cell).not.toHaveAttribute('onclick');
     }
     expect(within(screen.getByRole('grid')).queryByRole('button')).toBeNull();
+    // The overlay is decorative: hidden from assistive tech, click-through.
+    for (const mark of solutionMarkEls()) {
+      const svg = mark.closest('svg');
+      expect(svg).not.toBeNull();
+      expect(svg).toHaveAttribute('aria-hidden', 'true');
+      expect(svg?.getAttribute('class')).toContain('pointer-events-none');
+    }
   });
 });

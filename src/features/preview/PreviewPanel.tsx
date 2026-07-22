@@ -7,7 +7,7 @@ import { PreviewGrid } from './PreviewGrid';
 import { PreviewHeader } from './PreviewHeader';
 import { SolutionToggle } from './SolutionToggle';
 import type { PreviewView } from './SolutionToggle';
-import { solutionCellIndices } from './solutionCells';
+import { solutionMarks } from './solutionMarks';
 import { UnplaceableWarning } from './UnplaceableWarning';
 import { WordsToFind } from './WordsToFind';
 
@@ -27,9 +27,10 @@ interface PreviewPanelProps {
  * before any generation it keeps the empty state. The content region applies the
  * selected accessible font via the token-derived `fontFamilyClass` (issue #31),
  * and the chosen size flows into the grid. The Puzzle/Lösung view toggle (issue
- * #35) switches the grid between the plain puzzle and the static solution
- * highlight (placed words painted with the accent color); the view is local UI
- * state since it is a preview concern, not puzzle data.
+ * #35) switches the grid between the plain puzzle and the static solution view,
+ * which marks each placed word with its own rounded accent capsule (issue #56)
+ * so overlapping words stay individually readable; the view is local UI state
+ * since it is a preview concern, not puzzle data.
  */
 export function PreviewPanel({
   result,
@@ -37,9 +38,9 @@ export function PreviewPanel({
   font,
 }: PreviewPanelProps): JSX.Element {
   const [view, setView] = useState<PreviewView>('puzzle');
-  const highlighted =
+  const marks =
     result !== null && view === 'solution'
-      ? solutionCellIndices(result.placed, result.grid)
+      ? solutionMarks(result.placed)
       : undefined;
   return (
     <div className={fontFamilyClass(font.family)}>
@@ -59,7 +60,7 @@ export function PreviewPanel({
             <PreviewGrid
               grid={result.grid}
               fontSize={font.size}
-              highlighted={highlighted}
+              marks={marks}
             />
           </div>
           <WordsToFind placed={result.placed} />
