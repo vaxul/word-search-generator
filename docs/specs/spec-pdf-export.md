@@ -303,3 +303,14 @@ machine check covers are verified at the human milestone-QA gate.
   gains gap-assertion tests (grid inset ≥ each gap) and a no-overflow/min-pitch
   sweep across sizes 5–30 with the gaps applied. No DOM, no `any`, named exports,
   `npm run verify` + `npm run build` green.
+- 2026-07-22 (issue #55 — QA fix, solution title leading separator): the
+  no-title branch of `solutionHeader` (`src/core/pdf/renderSolution.ts`)
+  previously used `suffix.trim()`, which left the connector glyph in place —
+  `" — Lösung"` rendered as a dangling `"— Lösung"`. Added a pure
+  `bareSuffixLabel(suffix)` that strips a leading run of whitespace and
+  separator glyphs (en/em/figure/non-breaking dashes, hyphen, middot) via an
+  ASCII-safe-intent regex, yielding the bare `"Lösung"` when no title precedes
+  it. The with-title branch (`<title> — Lösung`) is unchanged. Core stays
+  string-free: the label is still caller-supplied data from `src/strings`, never
+  a hardcoded German literal. `solutionHeader` is now exported for direct unit
+  coverage of both branches (no-title → bare label, with-title → separator kept).

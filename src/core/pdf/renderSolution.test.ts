@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { GenerationResult, PlacedWord } from '../model';
 import { paginate } from './layout';
 import { renderPuzzleDoc, type PuzzleView } from './renderPuzzle';
-import { renderSolutionDoc, type SolutionView } from './renderSolution';
+import { renderSolutionDoc, solutionHeader, type SolutionView } from './renderSolution';
 
 // A letter pool including the German glyphs (ä/ö/ü/ß) so the embedded-font path
 // is exercised, mirroring the puzzle renderer spec.
@@ -102,6 +102,19 @@ describe('renderSolutionDoc — header + edge cases', () => {
     const puzzle = renderPuzzleDoc(result, { ...VIEW, header: SUFFIXED_HEADER });
     // No placed words → no highlight and no word list: identical to the puzzle.
     expect(bytes(solution)).toBe(bytes(puzzle));
+  });
+
+  it('with a title, keeps the separator: "<title> — Lösung"', () => {
+    const header = solutionHeader(SOL_VIEW.header, SOL_VIEW.solutionSuffix);
+    expect(header.title).toBe('Tiere — Lösung');
+  });
+
+  it('with no title, drops the leading separator: bare "Lösung"', () => {
+    const header = solutionHeader({ title: '', theme: '', date: '' }, ' — Lösung');
+    expect(header.title).toBe('Lösung');
+    expect(header.title.startsWith('—')).toBe(false);
+    expect(header.title.startsWith('-')).toBe(false);
+    expect(header.title.startsWith(' ')).toBe(false);
   });
 
   it('honours the supplied suffix and the empty-title (bare label) path', () => {
