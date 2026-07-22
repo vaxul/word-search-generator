@@ -287,3 +287,19 @@ machine check covers are verified at the human milestone-QA gate.
   stubbed), the empty-title fallback stem, and the pure `sanitizeFilenameStem`
   rules (diacritic fold, ß→ss, hyphen collapse, fallback). This completes
   milestone #4.
+- 2026-07-22 (issue #54 — Phase 4 QA-gate fix, header/word-list ↔ grid spacing):
+  the printed block placed the grid flush against the header and word-list strips
+  in the 2-up tier (the block is narrow-and-tall, so the square filled the whole
+  inner height with no centring slack; 1-up/4-up were width-limited and already
+  had slack). Added `HEADER_GAP_MM = 4` + `WORDLIST_GAP_MM = 4` to `layout.ts` and
+  compute the grid square from the gap-reduced region (`regionHeight = box.height −
+  BLOCK_HEADER_MM − BLOCK_WORDLIST_MM − HEADER_GAP_MM − WORDLIST_GAP_MM`), then
+  centre it there. This guarantees ≥4 mm of breathing room below the header and
+  above the word list in every tier. Fix lives entirely in the layout math, so it
+  flows to BOTH puzzle (`renderPuzzle.ts`) and solution (`renderSolution.ts`)
+  renderers unchanged (they draw into `layout.grid`). No overflow and pitch ≥
+  `MIN_LEGIBLE_CELL_PITCH_MM` still hold — worst cases size 17 @ 2-up (pitch ≈
+  5.6 mm) and size 30 @ 1-up (6.0 mm, width-limited, unaffected). `layout.test.ts`
+  gains gap-assertion tests (grid inset ≥ each gap) and a no-overflow/min-pitch
+  sweep across sizes 5–30 with the gaps applied. No DOM, no `any`, named exports,
+  `npm run verify` + `npm run build` green.

@@ -7,8 +7,10 @@ import {
   BLOCK_HEADER_MM,
   BLOCK_WORDLIST_MM,
   CONTENT_BOX,
+  HEADER_GAP_MM,
   MIN_LEGIBLE_CELL_PITCH_MM,
   PAGE_MARGIN_MM,
+  WORDLIST_GAP_MM,
   blockLayout,
   paginate,
   puzzlesPerPage,
@@ -149,5 +151,46 @@ describe('cell pitch fits the block without overflowing the content box', () => 
   it('is deterministic — identical inputs give identical geometry', () => {
     expect(paginate(17, 5)).toEqual(paginate(17, 5));
     expect(blockLayout(12, CONTENT_BOX)).toEqual(blockLayout(12, CONTENT_BOX));
+  });
+});
+
+describe('grid spacing — gaps between header/word-list and the grid (#54)', () => {
+  // Exercises every packing tier, incl. the tightest cases the task calls out:
+  // size 17 @ 2-up and size 30 @ 1-up (grid otherwise flush against the strips).
+  const sizes = [5, 10, 11, 17, 18, 30];
+
+  it('insets the grid from the header strip by at least the header gap', () => {
+    for (const size of sizes) {
+      const block = paginate(size, 1).pages[0].blocks[0];
+      const headerStripBottom = block.header.y + block.header.height;
+      const gapAboveGrid = block.grid.y - headerStripBottom;
+      expect(gapAboveGrid).toBeGreaterThanOrEqual(HEADER_GAP_MM - 1e-9);
+    }
+  });
+
+  it('insets the grid from the word-list strip by at least the word-list gap', () => {
+    for (const size of sizes) {
+      const block = paginate(size, 1).pages[0].blocks[0];
+      const gridBottom = block.grid.y + block.grid.height;
+      const gapBelowGrid = block.wordList.y - gridBottom;
+      expect(gapBelowGrid).toBeGreaterThanOrEqual(WORDLIST_GAP_MM - 1e-9);
+    }
+  });
+
+  it('never overflows the content box and stays legible with the gaps (5–30, all tiers)', () => {
+    for (let size = 5; size <= 30; size += 1) {
+      const block = paginate(size, 1).pages[0].blocks[0];
+      // Grid square fits the block's width and the gap-reduced inner region.
+      const region =
+        block.box.height -
+        BLOCK_HEADER_MM -
+        BLOCK_WORDLIST_MM -
+        HEADER_GAP_MM -
+        WORDLIST_GAP_MM;
+      expect(block.grid.width).toBeLessThanOrEqual(block.box.width + 1e-9);
+      expect(block.grid.height).toBeLessThanOrEqual(region + 1e-9);
+      expect(isWithin(block.grid, CONTENT_BOX)).toBe(true);
+      expect(block.cellPitch).toBeGreaterThanOrEqual(MIN_LEGIBLE_CELL_PITCH_MM);
+    }
   });
 });
