@@ -33,10 +33,19 @@ export interface SolutionView extends PuzzleView {
   readonly solutionSuffix: string;
 }
 
+/** Strips the leading connector from the suffix so the bare label survives when
+ * no title precedes it: a run of whitespace and separator glyphs (– — - ·) at
+ * the start is removed, turning `" — Lösung"` into `"Lösung"`. Core stays
+ * string-free — the label itself is caller-supplied data, never a literal. */
+function bareSuffixLabel(suffix: string): string {
+  return suffix.replace(/^[\s–—‒‐·-]+/u, '');
+}
+
 /** Derives the solution block header: the puzzle title tagged with the suffix
- * (or the trimmed suffix label when no title was entered), theme + date kept. */
-function solutionHeader(header: PdfPuzzleHeader, suffix: string): PdfPuzzleHeader {
-  const label = header.title.length > 0 ? `${header.title}${suffix}` : suffix.trim();
+ * (or the bare suffix label, leading separator dropped, when no title was
+ * entered), theme + date kept. Exported for unit coverage of both branches. */
+export function solutionHeader(header: PdfPuzzleHeader, suffix: string): PdfPuzzleHeader {
+  const label = header.title.length > 0 ? `${header.title}${suffix}` : bareSuffixLabel(suffix);
   return { ...header, title: label };
 }
 
